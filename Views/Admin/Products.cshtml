@@ -1,0 +1,121 @@
+﻿@model IEnumerable<Projet.Models.Product>
+@{
+    ViewData["Title"] = "Gestion des produits";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-page-header">
+    <div>
+        <h4 class="admin-page-title">Produits</h4>
+        <p class="admin-page-sub">@Model.Count() produit(s) au total</p>
+    </div>
+    <a asp-controller="Product" asp-action="Create" class="admin-btn-primary">
+        <i class="fas fa-plus me-2"></i>Ajouter un produit
+    </a>
+</div>
+
+<!-- Filtres -->
+<div class="admin-card mb-4">
+    <div class="admin-card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-5">
+                <input type="text" name="search" value="@ViewBag.Search"
+                       class="admin-input" placeholder="Rechercher un produit..." />
+            </div>
+            <div class="col-md-4">
+                <select name="categoryId" class="admin-input">
+                    <option value="">Toutes les catégories</option>
+                    @foreach (var cat in ViewBag.Categories)
+                    {
+                        <option value="@cat.Id"
+                                selected="@(ViewBag.CategoryId == cat.Id)">
+                            @cat.Name
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="admin-btn-primary w-100">
+                    <i class="fas fa-search me-1"></i>Filtrer
+                </button>
+                <a asp-action="Products" class="admin-btn-outline w-100 text-center">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Table -->
+<div class="admin-card">
+    <div class="admin-card-body p-0">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th>Catégorie</th>
+                    <th>Prix</th>
+                    <th>Stock</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="admin-product-cell">
+                                <div class="admin-product-img">
+                                    @if (p.ImageUrl != null)
+                                    {
+                                        <img src="@p.ImageUrl" alt="@p.Name" />
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-image"></i>
+                                    }
+                                </div>
+                                <div>
+                                    <div class="admin-product-name">@p.Name</div>
+                                    <div class="admin-product-id">#@p.Id</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>@p.Category?.Name</td>
+                        <td><strong>@p.Price.ToString("0.00") DT</strong></td>
+                        <td>
+                            <span class="@(p.Stock == 0 ? "stock-badge-out" : p.Stock <= 5 ? "stock-badge-low" : "stock-badge-ok")">
+                                @p.Stock
+                            </span>
+                        </td>
+                        <td>
+                            <span class="@(p.IsActive ? "status-badge-active" : "status-badge-inactive")">
+                                @(p.IsActive ? "Actif" : "Inactif")
+                            </span>
+                        </td>
+                        <td>
+                            <div class="admin-actions">
+                                <a asp-controller="Product" asp-action="Edit"
+                                       asp-route-id="@p.Id" class="admin-action-btn edit"
+                                       title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a asp-action="ToggleProduct" asp-route-id="@p.Id"
+                                       class="admin-action-btn @(p.IsActive ? "deactivate" : "activate")"
+                                       title="@(p.IsActive ? "Désactiver" : "Activer")">
+                                    <i class="fas @(p.IsActive ? "fa-eye-slash" : "fa-eye")"></i>
+                                </a>
+                                <a asp-controller="Product" asp-action="Delete"
+                                       asp-route-id="@p.Id" class="admin-action-btn delete"
+                                       title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

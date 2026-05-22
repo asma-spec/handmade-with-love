@@ -1,0 +1,243 @@
+﻿@model Projet.Models.Product
+@{
+    ViewData["Title"] = "Ajouter un produit";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-page-header">
+    <div>
+        <h4 class="admin-page-title">Ajouter un produit</h4>
+        <p class="admin-page-sub">Remplissez les informations du nouveau produit</p>
+    </div>
+    <a asp-action="Index" asp-controller="Admin"
+           class="admin-btn-outline">
+        <i class="fas fa-arrow-left me-2"></i>Retour
+    </a>
+</div>
+
+<form asp-action="Create" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+
+    <div class="row g-4">
+
+        <!-- ══ Colonne gauche ════════════════ -->
+        <div class="col-lg-8">
+
+            <!-- Infos principales -->
+            <div class="admin-card mb-4">
+                <div class="admin-card-header">
+                    <h6><i class="fas fa-info-circle me-2"></i>Informations générales</h6>
+                </div>
+                <div class="admin-card-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="admin-form-field">
+                                <label asp-for="Name" class="admin-form-label">
+                                    Nom du produit *
+                                </label>
+                                <input asp-for="Name" class="admin-input"
+                                       placeholder="Ex: Bague or rose fine" />
+                                <span asp-validation-for="Name" class="admin-form-error"></span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="admin-form-field">
+                                <label asp-for="Description" class="admin-form-label">
+                                    Description *
+                                </label>
+                                <textarea asp-for="Description" class="admin-input admin-textarea"
+                                          rows="4"
+                                          placeholder="Décrivez le produit en détail..."></textarea>
+                                <span asp-validation-for="Description" class="admin-form-error"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="admin-form-field">
+                                <label asp-for="Price" class="admin-form-label">
+                                    Prix (DT) *
+                                </label>
+                                <div class="admin-input-prefix">
+                                    <span class="admin-prefix">DT</span>
+                                    <input asp-for="Price" class="admin-input with-prefix"
+                                           type="number" step="0.01" min="0"
+                                           placeholder="0.00" />
+                                </div>
+                                <span asp-validation-for="Price" class="admin-form-error"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="admin-form-field">
+                                <label asp-for="Stock" class="admin-form-label">
+                                    Stock *
+                                </label>
+                                <input asp-for="Stock" class="admin-input"
+                                       type="number" min="0"
+                                       placeholder="Quantité disponible" />
+                                <span asp-validation-for="Stock" class="admin-form-error"></span>
+                            </div>
+                        </div>
+                        <!-- Promotion -->
+                        <div class="admin-card mb-4">
+                            <div class="admin-card-header">
+                                <h6><i class="fas fa-tag me-2"></i>Promotion</h6>
+                            </div>
+                            <div class="admin-card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="admin-form-field">
+                                            <label class="admin-form-label">
+                                                Réduction (%)
+                                            </label>
+                                            <div class="admin-input-prefix">
+                                                <span class="admin-prefix">%</span>
+                                                <input asp-for="DiscountPercent"
+                                                       class="admin-input with-prefix"
+                                                       type="number" min="0" max="100"
+                                                       step="1"
+                                                       placeholder="Ex: 20" />
+                                            </div>
+                                            <small class="text-muted" style="font-size:0.75rem">
+                                                Laissez vide si pas de promotion.
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="admin-form-field">
+                                            <label class="admin-form-label">En promotion</label>
+                                            <label class="admin-toggle-label mt-2">
+                                                <input asp-for="IsOnSale"
+                                                       type="checkbox"
+                                                       class="admin-toggle-input" />
+                                                <span class="admin-toggle-slider"></span>
+                                                <span class="admin-toggle-text">
+                                                    Afficher comme produit en promo
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="admin-form-field">
+                                <label asp-for="CategoryId" class="admin-form-label">
+                                    Catégorie *
+                                </label>
+                                <select asp-for="CategoryId" class="admin-input"
+                                        asp-items="ViewBag.CategoryId">
+                                    <option value="">-- Choisir une catégorie --</option>
+                                </select>
+                                <span asp-validation-for="CategoryId" class="admin-form-error"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ══ Colonne droite ════════════════ -->
+        <div class="col-lg-4">
+
+            <!-- Image -->
+            <div class="admin-card mb-4">
+                <div class="admin-card-header">
+                    <h6><i class="fas fa-image me-2"></i>Image du produit</h6>
+                </div>
+                <div class="admin-card-body">
+                    <!-- Preview -->
+                    <div class="img-preview" id="imgPreview">
+                        <i class="fas fa-image"></i>
+                        <span>Aperçu de l'image</span>
+                    </div>
+
+                    <!-- Upload fichier -->
+                    <div class="admin-form-field mt-3">
+                        <label class="admin-form-label">Uploader une image</label>
+                        <div class="admin-file-upload">
+                            <input type="file" name="imageFile" id="imageFile"
+                                   accept="image/*"
+                                   onchange="previewImage(this)" />
+                            <label for="imageFile" class="admin-file-label">
+                                <i class="fas fa-upload me-2"></i>
+                                Choisir un fichier
+                            </label>
+                            <span class="admin-file-name" id="fileName">
+                                Aucun fichier choisi
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- OU URL -->
+                    <div class="admin-form-divider">
+                        <span>ou</span>
+                    </div>
+
+                    <div class="admin-form-field">
+                        <label asp-for="ImageUrl" class="admin-form-label">
+                            URL de l'image
+                        </label>
+                        <input asp-for="ImageUrl" class="admin-input"
+                               placeholder="https://..."
+                               oninput="previewUrl(this.value)" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statut -->
+            <div class="admin-card mb-4">
+                <div class="admin-card-header">
+                    <h6><i class="fas fa-toggle-on me-2"></i>Statut</h6>
+                </div>
+                <div class="admin-card-body">
+                    <label class="admin-toggle-label">
+                        <input asp-for="IsActive" type="checkbox"
+                               class="admin-toggle-input" checked />
+                        <span class="admin-toggle-slider"></span>
+                        <span class="admin-toggle-text">Produit actif (visible en boutique)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="d-flex flex-column gap-2">
+                <button type="submit" class="admin-btn-primary">
+                    <i class="fas fa-plus me-2"></i>Ajouter le produit
+                </button>
+                <a asp-controller="Admin" asp-action="Products"
+                       class="admin-btn-outline text-center">
+                    Annuler
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function previewImage(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    showPreview(e.target.result);
+                };
+                reader.readAsDataURL(file);
+                document.getElementById('fileName').textContent = file.name;
+            }
+        }
+
+        function previewUrl(url) {
+            if (url) showPreview(url);
+        }
+
+        function showPreview(src) {
+            const preview = document.getElementById('imgPreview');
+            preview.innerHTML = `<img src="${src}" alt="Aperçu"
+                onerror="this.parentElement.innerHTML='<i class=\\'fas fa-image\\'></i><span>Image invalide</span>'" />`;
+        }
+    </script>
+}

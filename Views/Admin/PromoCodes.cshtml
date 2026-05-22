@@ -1,0 +1,190 @@
+﻿@model IEnumerable<Projet.Models.PromoCode>
+@{
+    ViewData["Title"] = "Codes promo";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-page-header">
+    <div>
+        <h4 class="admin-page-title">Codes promo</h4>
+        <p class="admin-page-sub">@Model.Count() code(s) au total</p>
+    </div>
+    <button class="admin-btn-primary" onclick="toggleForm()">
+        <i class="fas fa-plus me-2"></i>Nouveau code
+    </button>
+</div>
+
+<!-- Formulaire création -->
+<div class="admin-card mb-4" id="promoForm" style="display:none">
+    <div class="admin-card-header">
+        <h6><i class="fas fa-ticket-alt me-2"></i>Créer un code promo</h6>
+    </div>
+    <div class="admin-card-body">
+        <form asp-action="AddPromoCode" method="post">
+            @Html.AntiForgeryToken()
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="admin-form-field">
+                        <label class="admin-form-label">Code *</label>
+                        <input type="text" name="code" class="admin-input"
+                               placeholder="Ex: SUMMER20"
+                               style="text-transform:uppercase" required />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="admin-form-field">
+                        <label class="admin-form-label">Type *</label>
+                        <select name="type" class="admin-input" required>
+                            <option value="Percentage">Pourcentage (%)</option>
+                            <option value="FixedAmount">Montant fixe (DT)</option>
+                            <option value="FreeShipping">Livraison gratuite</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="admin-form-field">
+                        <label class="admin-form-label">Valeur *</label>
+                        <input type="number" name="value" class="admin-input"
+                               placeholder="Ex: 10" step="0.01" min="0" required />
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="admin-form-field">
+                        <label class="admin-form-label">Max utilisations</label>
+                        <input type="number" name="maxUsage" class="admin-input"
+                               value="100" min="1" />
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="admin-form-field">
+                        <label class="admin-form-label">Expire le</label>
+                        <input type="date" name="expiresAt" class="admin-input" />
+                    </div>
+                </div>
+                <div class="col-12 d-flex gap-2">
+                    <button type="submit" class="admin-btn-primary">
+                        <i class="fas fa-save me-2"></i>Créer le code
+                    </button>
+                    <button type="button" class="admin-btn-outline"
+                            onclick="toggleForm()">
+                        Annuler
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Liste codes promo -->
+<div class="admin-card">
+    <div class="admin-card-body p-0">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Type</th>
+                    <th>Valeur</th>
+                    <th>Utilisations</th>
+                    <th>Expiration</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var promo in Model)
+                {
+                    <tr>
+                        <td>
+                            <span class="promo-code-badge">@promo.Code</span>
+                        </td>
+                        <td>
+                            @if (promo.Type == "Percentage")
+                            {
+                                <span><i class="fas fa-percent me-1 text-muted"></i>Pourcentage</span>
+                            }
+                            else if (promo.Type == "FixedAmount")
+                            {
+                                <span><i class="fas fa-coins me-1 text-muted"></i>Montant fixe</span>
+                            }
+                            else
+                            {
+                                <span><i class="fas fa-truck me-1 text-muted"></i>Livraison gratuite</span>
+                            }
+                        </td>
+                        <td>
+                            <strong>
+                                @if (promo.Type == "Percentage")
+                                {
+                                    @($"-{promo.Value}%")
+                                }
+                                else if (promo.Type == "FixedAmount")
+                                {
+                                    @($"-{promo.Value} DT")
+                                }
+                                else
+                                {
+                                    @("Gratuite")
+                                }
+                            </strong>
+                        </td>
+                        <td>
+                            <div class="promo-usage">
+                                <div class="promo-usage-bar">
+                                    <div class="promo-usage-fill"
+                                         style="width:@(Math.Min(100, (int)((double)promo.UsageCount / promo.MaxUsage * 100)))%">
+                                    </div>
+                                </div>
+                                <span>@promo.UsageCount / @promo.MaxUsage</span>
+                            </div>
+                        </td>
+                        <td>
+                            @if (promo.ExpiresAt.HasValue)
+                            {
+                                bool expired = promo.ExpiresAt < DateTime.Now;
+                                <span style="color:@(expired ? "#c0392b" : "inherit")">
+                                    @promo.ExpiresAt.Value.ToString("dd/MM/yyyy")
+                                    @if (expired)
+                                    {
+                                        <small>(Expiré)</small>
+                                    }
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Sans limite</span>
+                            }
+                        </td>
+                        <td>
+                            <span class="@(promo.IsActive ? "status-badge-active" : "status-badge-inactive")">
+                                @(promo.IsActive ? "Actif" : "Inactif")
+                            </span>
+                        </td>
+                        <td>
+                            <div class="admin-actions">
+                                <form asp-action="TogglePromoCode" method="post"
+                                      style="display:inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@promo.Id" />
+                                    <button type="submit"
+                                            class="admin-action-btn @(promo.IsActive ? "deactivate" : "activate")"
+                                            title="@(promo.IsActive ? "Désactiver" : "Activer")">
+                                        <i class="fas @(promo.IsActive ? "fa-toggle-off" : "fa-toggle-on")"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleForm() {
+            const form = document.getElementById('promoForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+}

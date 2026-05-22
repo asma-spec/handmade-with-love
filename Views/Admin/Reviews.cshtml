@@ -1,0 +1,138 @@
+﻿@model IEnumerable<Projet.Models.Review>
+@{
+    ViewData["Title"] = "Avis clients";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-page-header">
+    <div>
+        <h4 class="admin-page-title">Avis clients</h4>
+        <p class="admin-page-sub">@Model.Count() avis au total</p>
+    </div>
+</div>
+
+<!-- Filtres -->
+<div class="admin-card mb-4">
+    <div class="admin-card-body">
+        <div class="d-flex gap-2 flex-wrap">
+            <a asp-action="Reviews" class="status-btn @(ViewBag.Filter == null ? "active" : "")">
+                Tous (@Model.Count())
+            </a>
+            <a asp-action="Reviews" asp-route-filter="pending"
+                   class="status-btn @(ViewBag.Filter == "pending" ? "active" : "")">
+                En attente (@Model.Count(r => !r.IsApproved))
+            </a>
+            <a asp-action="Reviews" asp-route-filter="approved"
+                   class="status-btn @(ViewBag.Filter == "approved" ? "active" : "")">
+                Publiés (@Model.Count(r => r.IsApproved))
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Liste avis -->
+<div class="admin-card">
+    <div class="admin-card-body p-0">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th>Client</th>
+                    <th>Note</th>
+                    <th>Commentaire</th>
+                    <th>Date</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var review in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="admin-product-cell">
+                                <div class="admin-product-img">
+                                    @if (review.Product?.ImageUrl != null)
+                                    {
+                                        <img src="@review.Product.ImageUrl"
+                                             alt="@review.Product.Name" />
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-image"></i>
+                                    }
+                                </div>
+                                <div class="admin-product-name">
+                                    @(review.Product?.Name ?? "Produit supprimé")
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="admin-client-name">@review.User?.FullName</div>
+                            <div class="admin-client-email">@review.User?.Email</div>
+                        </td>
+                        <td>
+                            <div class="review-stars-admin">
+                                @for (int s = 1; s <= 5; s++)
+                                {
+                                    <i class="fas fa-star @(s <= review.Rating ? "star-on" : "star-off")"
+                                       style="font-size:0.8rem"></i>
+                                }
+                                <span class="ms-1" style="font-size:0.8rem">@review.Rating/5</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="review-comment-preview">
+                                @(review.Comment.Length > 60
+                                    ? review.Comment.Substring(0, 60) + "..."
+                                    : review.Comment)
+                            </div>
+                        </td>
+                        <td class="text-muted" style="font-size:0.82rem">
+                            @review.CreatedAt.ToString("dd/MM/yyyy")
+                        </td>
+                        <td>
+                            @if (review.IsApproved)
+                            {
+                                <span class="review-badge approved">
+                                    <i class="fas fa-check me-1"></i>Publié
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="review-badge pending">
+                                    <i class="fas fa-clock me-1"></i>En attente
+                                </span>
+                            }
+                        </td>
+                        <td>
+                            <div class="admin-actions">
+                                <form asp-action="ApproveReview" method="post"
+                                      style="display:inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@review.Id" />
+                                    <button type="submit"
+                                            class="admin-action-btn @(review.IsApproved ? "deactivate" : "activate")"
+                                            title="@(review.IsApproved ? "Masquer" : "Publier")">
+                                        <i class="fas @(review.IsApproved ? "fa-eye-slash" : "fa-check")"></i>
+                                    </button>
+                                </form>
+                                <form asp-action="DeleteReview" method="post"
+                                      style="display:inline"
+                                      onsubmit="return confirm('Supprimer cet avis ?')">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@review.Id" />
+                                    <button type="submit"
+                                            class="admin-action-btn delete"
+                                            title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

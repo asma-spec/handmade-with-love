@@ -1,0 +1,137 @@
+﻿@model Projet.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Inscription";
+}
+
+<div class="auth-page">
+    <div class="auth-container">
+
+        <!-- Côté gauche -->
+        <div class="auth-left">
+            <div class="auth-left-content">
+                <i class="fas fa-gem auth-logo-icon"></i>
+                <h2 class="auth-left-title">Rejoignez-nous !</h2>
+                <p class="auth-left-desc">
+                    Créez votre compte et profitez d'une expérience
+                    shopping unique et personnalisée.
+                </p>
+                <div class="auth-features">
+                    <div class="auth-feature">
+                        <i class="fas fa-gift"></i>
+                        <span>10% de réduction sur votre 1ère commande</span>
+                    </div>
+                    <div class="auth-feature">
+                        <i class="fas fa-star"></i>
+                        <span>Points fidélité dès le premier achat</span>
+                    </div>
+                    <div class="auth-feature">
+                        <i class="fas fa-bell"></i>
+                        <span>Alertes exclusives avant tout le monde</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulaire -->
+        <div class="auth-right">
+            <div class="auth-form-wrap">
+                <div class="auth-header">
+                    <h3 class="auth-title">Créer un compte</h3>
+                    <p class="auth-subtitle">C'est rapide et gratuit 🌸</p>
+                </div>
+
+                <form asp-action="Register" method="post">
+                    @Html.AntiForgeryToken()
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="auth-alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            @Html.ValidationSummary(false, "", new { @class = "mb-0" })
+                        </div>
+                    }
+
+                    <div class="auth-field">
+                        <label asp-for="FullName" class="auth-label"></label>
+                        <div class="auth-input-wrap">
+                            <i class="fas fa-user auth-input-icon"></i>
+                            <input asp-for="FullName" class="auth-input"
+                                   placeholder="Votre nom complet" />
+                        </div>
+                        <span asp-validation-for="FullName" class="auth-error"></span>
+                    </div>
+
+                    <div class="auth-field">
+                        <label asp-for="Email" class="auth-label"></label>
+                        <div class="auth-input-wrap">
+                            <i class="fas fa-envelope auth-input-icon"></i>
+                            <input asp-for="Email" class="auth-input"
+                                   placeholder="votre@email.com" />
+                        </div>
+                        <span asp-validation-for="Email" class="auth-error"></span>
+                    </div>
+
+                    <div class="auth-field">
+                        <label asp-for="Password" class="auth-label"></label>
+                        <div class="auth-input-wrap">
+                            <i class="fas fa-lock auth-input-icon"></i>
+                            <input asp-for="Password" class="auth-input"
+                                   placeholder="Minimum 6 caractères" id="pwd1" />
+                            <button type="button" class="auth-eye" onclick="togglePwd('pwd1','eye1')">
+                                <i class="fas fa-eye" id="eye1"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="auth-error"></span>
+                    </div>
+
+                    <div class="auth-field">
+                        <label asp-for="ConfirmPassword" class="auth-label"></label>
+                        <div class="auth-input-wrap">
+                            <i class="fas fa-lock auth-input-icon"></i>
+                            <input asp-for="ConfirmPassword" class="auth-input"
+                                   placeholder="Répétez le mot de passe" id="pwd2" />
+                            <button type="button" class="auth-eye" onclick="togglePwd('pwd2','eye2')">
+                                <i class="fas fa-eye" id="eye2"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="ConfirmPassword" class="auth-error"></span>
+                    </div>
+
+                    <div class="auth-terms">
+                        <input type="checkbox" id="terms" required class="auth-checkbox" />
+                        <label for="terms">
+                            J'accepte les <a href="#" class="auth-switch-link">conditions d'utilisation</a>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="auth-btn">
+                        <i class="fas fa-user-plus me-2"></i>Créer mon compte
+                    </button>
+
+                    <div class="auth-divider"><span>ou</span></div>
+
+                    <p class="auth-switch">
+                        Déjà un compte ?
+                        <a asp-action="Login" class="auth-switch-link">Se connecter</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function togglePwd(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon  = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+    </script>
+}

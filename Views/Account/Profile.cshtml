@@ -1,0 +1,364 @@
+﻿@model Projet.Models.User
+@{
+    ViewData["Title"] = "Mon Profil";
+    int nextTarget = 1000;
+    int pct = 0;
+    if (Model.LoyaltyAccount != null)
+    {
+        if (Model.LoyaltyAccount.Level == "Silver") nextTarget = 5000;
+        if (Model.LoyaltyAccount.Level == "Gold") nextTarget = 10000;
+        if (Model.LoyaltyAccount.Level == "Platinum") nextTarget = 10000;
+        pct = Math.Min(100,
+            (int)((double)Model.LoyaltyAccount.Points / nextTarget * 100));
+    }
+}
+
+<div class="profile-page">
+    <div class="container py-5">
+
+        <!-- ── En-tête profil ─────────────────── -->
+        <div class="profile-header">
+            <div class="profile-avatar-wrap">
+                <div class="profile-avatar">
+                    @Model.FullName.Substring(0, 1).ToUpper()
+                </div>
+                <div class="profile-avatar-badge">
+                    <i class="fas fa-check"></i>
+                </div>
+            </div>
+            <div class="profile-header-info">
+                <h2 class="profile-name">@Model.FullName</h2>
+                <p class="profile-email">
+                    <i class="fas fa-envelope me-2"></i>@Model.Email
+                </p>
+                <div class="profile-meta">
+                    <span class="profile-role">
+                        <i class="fas fa-user-circle me-1"></i>@Model.Role
+                    </span>
+                    <span class="profile-since">
+                        <i class="fas fa-calendar me-1"></i>
+                        Membre depuis @Model.CreatedAt.ToString("MMMM yyyy")
+                    </span>
+                </div>
+            </div>
+            @if (Model.LoyaltyAccount != null)
+            {
+                <div class="profile-loyalty-badge level-@Model.LoyaltyAccount.Level.ToLower()">
+                    <i class="fas fa-crown me-1"></i>
+                    @Model.LoyaltyAccount.Level
+                    <span>@Model.LoyaltyAccount.Points pts</span>
+                </div>
+            }
+        </div>
+
+        <div class="row g-4 mt-2">
+
+            <!-- ══ SIDEBAR ════════════════════════ -->
+            <div class="col-lg-3">
+                <div class="profile-nav-card">
+                    <nav class="profile-nav">
+                        <a href="#" class="profile-nav-item active"
+                               onclick="showTab('infos', this); return false;">
+                            <i class="fas fa-user"></i> Mes informations
+                        </a>
+                        <a href="#" class="profile-nav-item"
+                               onclick="showTab('orders', this); return false;">
+                            <i class="fas fa-box"></i> Mes commandes
+                            @if (Model.Orders != null && Model.Orders.Count > 0)
+                            {
+                                <span class="nav-badge">@Model.Orders.Count</span>
+                            }
+                        </a>
+                        <a href="#" class="profile-nav-item"
+                               onclick="showTab('loyalty', this); return false;">
+                            <i class="fas fa-star"></i> Fidélité & Points
+                        </a>
+                        <a href="#" class="profile-nav-item"
+                               onclick="showTab('password', this); return false;">
+                            <i class="fas fa-lock"></i> Mot de passe
+                        </a>
+                        <hr class="my-2" />
+                        <a asp-controller="Account" asp-action="Logout"
+                               class="profile-nav-item text-danger">
+                            <i class="fas fa-sign-out-alt"></i> Déconnexion
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- ══ CONTENU ════════════════════════ -->
+            <div class="col-lg-9">
+
+                <!-- Tab : Informations -->
+                <div id="tab-infos" class="profile-tab active">
+                    <div class="profile-card">
+                        <div class="profile-card-header">
+                            <h5>
+                                <i class="fas fa-user me-2"></i>
+                                Mes informations
+                            </h5>
+                        </div>
+                        <div class="profile-card-body">
+                            <form asp-action="UpdateProfile" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="Id"
+                                       value="@Model.Id" />
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="auth-field">
+                                            <label class="auth-label">
+                                                Nom complet
+                                            </label>
+                                            <div class="auth-input-wrap">
+                                                <i class="fas fa-user auth-input-icon"></i>
+                                                <input type="text" name="FullName"
+                                                       value="@Model.FullName"
+                                                       class="auth-input"
+                                                       required />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="auth-field">
+                                            <label class="auth-label">
+                                                Adresse email
+                                            </label>
+                                            <div class="auth-input-wrap">
+                                                <i class="fas fa-envelope auth-input-icon"></i>
+                                                <input type="email" name="Email"
+                                                       value="@Model.Email"
+                                                       class="auth-input"
+                                                       required />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="auth-btn mt-3"
+                                        style="max-width:200px">
+                                    <i class="fas fa-save me-2"></i>Enregistrer
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab : Commandes -->
+                <div id="tab-orders" class="profile-tab">
+                    <div class="profile-card">
+                        <div class="profile-card-header">
+                            <h5>
+                                <i class="fas fa-box me-2"></i>
+                                Mes commandes
+                            </h5>
+                        </div>
+                        <div class="profile-card-body">
+                            @if (Model.Orders != null && Model.Orders.Any())
+                            {
+                                <div class="orders-list">
+                                    @foreach (var order in Model.Orders
+                                                                            .OrderByDescending(o => o.CreatedAt))
+                                    {
+                                        <div class="order-item">
+                                            <div class="order-info">
+                                                <span class="order-num">
+                                                    #@order.Id
+                                                </span>
+                                                <span class="order-date">
+                                                    @order.CreatedAt
+                                                    .ToString("dd/MM/yyyy")
+                                                </span>
+                                            </div>
+                                            <div class="order-status-wrap">
+                                                <span class="order-status status-@order.Status.ToLower().Replace(" ", "")">
+                                                    @order.Status
+                                                </span>
+                                            </div>
+                                            <div class="order-total">
+                                                <strong>
+                                                    @order.Total.ToString("0.00") DT
+                                                </strong>
+                                            </div>
+                                            <!-- ✅ Correction -->
+                                            <a asp-controller="Account"
+                                                   asp-action="OrderDetail"
+                                                   asp-route-id="@order.Id"
+                                                   class="order-detail-btn">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="empty-state">
+                                    <i class="fas fa-box-open"></i>
+                                    <h5>Aucune commande</h5>
+                                    <p>
+                                        Vous n'avez pas encore
+                                        passé de commande.
+                                    </p>
+                                    <a asp-controller="Shop"
+                                           asp-action="Index"
+                                           class="btn-filter-apply mt-2"
+                                           style="max-width:200px; margin:0 auto">
+                                        Découvrir la boutique
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab : Fidélité -->
+                <div id="tab-loyalty" class="profile-tab">
+                    <div class="profile-card">
+                        <div class="profile-card-header">
+                            <h5>
+                                <i class="fas fa-star me-2"></i>
+                                Programme Fidélité
+                            </h5>
+                        </div>
+                        <div class="profile-card-body">
+                            @if (Model.LoyaltyAccount != null)
+                            {
+                                <div class="loyalty-current">
+                                    <div class="loyalty-level-icon level-@Model.LoyaltyAccount.Level.ToLower()">
+                                        <i class="fas fa-crown"></i>
+                                    </div>
+                                    <div>
+                                        <div class="loyalty-level-name">
+                                            Niveau @Model.LoyaltyAccount.Level
+                                        </div>
+                                        <div class="loyalty-points">
+                                            @Model.LoyaltyAccount.Points
+                                            points accumulés
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="loyalty-progress-wrap">
+                                    <div class="loyalty-progress-bar">
+                                        <div class="loyalty-progress-fill"
+                                             style="width:@(pct)%">
+                                        </div>
+                                    </div>
+                                    <div class="loyalty-progress-label">
+                                        @Model.LoyaltyAccount.Points /
+                                        @nextTarget pts pour le niveau suivant
+                                    </div>
+                                </div>
+
+                                <div class="loyalty-levels">
+                                    <div class="loyalty-level-card @(Model.LoyaltyAccount.Level == "Bronze" ? "current" : "")">
+                                        <span class="lvl-icon">🥉</span>
+                                        <span class="lvl-name">Bronze</span>
+                                        <span class="lvl-range">0 — 999 pts</span>
+                                    </div>
+                                    <div class="loyalty-level-card @(Model.LoyaltyAccount.Level == "Silver" ? "current" : "")">
+                                        <span class="lvl-icon">🥈</span>
+                                        <span class="lvl-name">Silver</span>
+                                        <span class="lvl-range">1000 — 4999 pts</span>
+                                    </div>
+                                    <div class="loyalty-level-card @(Model.LoyaltyAccount.Level == "Gold" ? "current" : "")">
+                                        <span class="lvl-icon">🥇</span>
+                                        <span class="lvl-name">Gold</span>
+                                        <span class="lvl-range">5000 — 9999 pts</span>
+                                    </div>
+                                    <div class="loyalty-level-card @(Model.LoyaltyAccount.Level == "Platinum" ? "current" : "")">
+                                        <span class="lvl-icon">💎</span>
+                                        <span class="lvl-name">Platinum</span>
+                                        <span class="lvl-range">10000+ pts</span>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted">
+                                    Aucun compte fidélité associé.
+                                </p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab : Mot de passe -->
+                <div id="tab-password" class="profile-tab">
+                    <div class="profile-card">
+                        <div class="profile-card-header">
+                            <h5>
+                                <i class="fas fa-lock me-2"></i>
+                                Changer le mot de passe
+                            </h5>
+                        </div>
+                        <div class="profile-card-body">
+                            <form asp-action="ChangePassword" method="post">
+                                @Html.AntiForgeryToken()
+                                <div class="auth-field">
+                                    <label class="auth-label">
+                                        Mot de passe actuel
+                                    </label>
+                                    <div class="auth-input-wrap">
+                                        <i class="fas fa-lock auth-input-icon"></i>
+                                        <input type="password"
+                                               name="CurrentPassword"
+                                               class="auth-input"
+                                               placeholder="••••••••"
+                                               required />
+                                    </div>
+                                </div>
+                                <div class="auth-field">
+                                    <label class="auth-label">
+                                        Nouveau mot de passe
+                                    </label>
+                                    <div class="auth-input-wrap">
+                                        <i class="fas fa-lock auth-input-icon"></i>
+                                        <input type="password"
+                                               name="NewPassword"
+                                               class="auth-input"
+                                               placeholder="Minimum 6 caractères"
+                                               required />
+                                    </div>
+                                </div>
+                                <div class="auth-field">
+                                    <label class="auth-label">
+                                        Confirmer le nouveau mot de passe
+                                    </label>
+                                    <div class="auth-input-wrap">
+                                        <i class="fas fa-lock auth-input-icon"></i>
+                                        <input type="password"
+                                               name="ConfirmPassword"
+                                               class="auth-input"
+                                               placeholder="••••••••"
+                                               required />
+                                    </div>
+                                </div>
+                                <button type="submit" class="auth-btn mt-2"
+                                        style="max-width:220px">
+                                    <i class="fas fa-save me-2"></i>
+                                    Mettre à jour
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showTab(id, el) {
+            document.querySelectorAll('.profile-tab').forEach(function(t) {
+                t.classList.remove('active');
+            });
+            document.querySelectorAll('.profile-nav-item').forEach(function(n) {
+                n.classList.remove('active');
+            });
+            document.getElementById('tab-' + id).classList.add('active');
+            el.classList.add('active');
+        }
+    </script>
+}

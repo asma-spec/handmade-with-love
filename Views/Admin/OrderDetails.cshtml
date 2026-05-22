@@ -1,0 +1,267 @@
+﻿@model Projet.Models.Order
+@{
+    ViewData["Title"] = $"Commande #{Model.Id}";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var statuses = new[] {
+        "En attente", "Confirmée", "En préparation",
+        "Expédiée", "Livrée", "Annulée"
+    };
+}
+
+<div class="admin-page-header">
+    <div>
+        <h4 class="admin-page-title">Commande #@Model.Id</h4>
+        <p class="admin-page-sub">
+            Passée le @Model.CreatedAt.ToString("dd/MM/yyyy à HH:mm")
+        </p>
+    </div>
+    <a asp-action="Orders" class="admin-btn-outline">
+        <i class="fas fa-arrow-left me-2"></i>Retour
+    </a>
+</div>
+
+<div class="row g-4">
+
+    <!-- ══ Infos commande ════════════════════ -->
+    <div class="col-lg-8">
+
+        <!-- Statut & Timeline -->
+        <div class="admin-card mb-4">
+            <div class="admin-card-header">
+                <h6><i class="fas fa-map-signs me-2"></i>Statut de la commande</h6>
+                <span class="order-status status-@Model.Status.ToLower().Replace(" ", "")">
+                    @Model.Status
+                </span>
+            </div>
+            <div class="admin-card-body">
+
+                <!-- Timeline -->
+                @if (Model.Status != "Annulée")
+                {
+                    <div class="order-timeline order-timeline-large mb-4">
+                        @{
+                            int current = Array.IndexOf(statuses.Take(5).ToArray(), Model.Status);
+                        }
+                        @for (int i = 0; i < 5; i++)
+                        {
+                            bool done = i <= current;
+                            bool active = i == current;
+                            string cls = done ? (active ? "active" : "done") : "";
+                            <div class="timeline-step @cls">
+                                <div class="timeline-dot">
+                                    @if (done && !active)
+                                    {
+                                        <i class="fas fa-check"></i>
+                                    }
+                                    else
+                                    {
+                                        <span>@(i + 1)</span>
+                                    }
+                                </div>
+                                <div class="timeline-label">@statuses[i]</div>
+                            </div>
+                            if (i < 4)
+                            {
+                                string lineCls = i < current ? "done" : "";
+                                <div class="timeline-line @lineCls"></div>
+                            }
+                        }
+                    </div>
+                }
+
+                <!-- Changer le statut -->
+                <div class="status-change-box">
+                    <h6 class="status-change-title">
+                        <i class="fas fa-edit me-2"></i>Changer le statut
+                    </h6>
+                    <form asp-action="UpdateOrderStatus" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <div class="status-buttons">
+                            @foreach (var status in statuses)
+                            {
+                                string btnClass = Model.Status == status
+                                    ? "status-btn active"
+                                    : "status-btn";
+                                string icon = status switch
+                                {
+                                    "En attente" => "fa-clock",
+                                    "Confirmée" => "fa-check-circle",
+                                    "En préparation" => "fa-box",
+                                    "Expédiée" => "fa-truck",
+                                    "Livrée" => "fa-home",
+                                    "Annulée" => "fa-times-circle",
+                                    _ => "fa-circle"
+                                };
+                                <button type="submit" name="status"
+                                        value="@status"
+                                        class="@btnClass"
+                                    @(Model.Status == status ? "disabled" : "")>
+                                    <i class="fas @icon me-2"></i>@status
+                                </button>
+                            }
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Articles -->
+        <div class="admin-card mb-4">
+            <div class="admin-card-header">
+                <h6><i class="fas fa-list me-2"></i>Articles commandés</h6>
+                <span class="text-muted" style="font-size:0.82rem">
+                    @Model.Items.Count article(s)
+                </span>
+            </div>
+            <div class="admin-card-body p-0">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Produit</th>
+                            <th>Prix unitaire</th>
+                            <th>Quantité</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="admin-product-cell">
+                                        <div class="admin-product-img">
+                                            @if (item.Product?.ImageUrl != null)
+                                            {
+                                                <img src="@item.Product.ImageUrl"
+                                                     alt="@item.Product.Name" />
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-image"></i>
+                                            }
+                                        </div>
+                                        <div>
+                                            <div class="admin-product-name">
+                                                @(item.Product?.Name ?? "Produit supprimé")
+                                            </div>
+                                            <div class="admin-product-id">
+                                                #@item.ProductId
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@item.UnitPrice.ToString("0.00") DT</td>
+                                <td>
+                                    <span class="qty-display">×@item.Quantity</span>
+                                </td>
+                                <td>
+                                    <strong>
+                                        @((item.UnitPrice * item.Quantity).ToString("0.00")) DT
+                                    </strong>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ══ Récapitulatif ══════════════════════ -->
+    <div class="col-lg-4">
+
+        <!-- Résumé financier -->
+        <div class="admin-card mb-4">
+            <div class="admin-card-header">
+                <h6><i class="fas fa-receipt me-2"></i>Résumé financier</h6>
+            </div>
+            <div class="admin-card-body">
+                <div class="cart-summary-row">
+                    <span>Sous-total</span>
+                    <span>
+                        @Model.Items.Sum(i => i.UnitPrice * i.Quantity).ToString("0.00") DT
+                    </span>
+                </div>
+                @if (Model.Discount > 0)
+                {
+                    <div class="cart-summary-row text-success">
+                        <span>
+                            Réduction
+                            @if (!string.IsNullOrEmpty(Model.PromoCodeUsed))
+                            {
+                                <small>(@Model.PromoCodeUsed)</small>
+                            }
+                        </span>
+                        <span>-@Model.Discount.ToString("0.00") DT</span>
+                    </div>
+                }
+                <hr />
+                <div class="cart-summary-total">
+                    <span>Total</span>
+                    <span>@Model.Total.ToString("0.00") DT</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Infos client -->
+        <div class="admin-card mb-4">
+            <div class="admin-card-header">
+                <h6><i class="fas fa-user me-2"></i>Client</h6>
+            </div>
+            <div class="admin-card-body">
+                <div class="order-info-value">@Model.CustomerName</div>
+                <div class="order-info-sub">@Model.CustomerEmail</div>
+                <hr />
+                <div class="order-info-title mt-2">
+                    <i class="fas fa-map-marker-alt me-2"></i>Adresse
+                </div>
+                <div class="order-info-value mt-1">@Model.ShippingAddress</div>
+            </div>
+        </div>
+
+        <!-- Paiement -->
+        <div class="admin-card mb-4">
+            <div class="admin-card-header">
+                <h6><i class="fas fa-money-bill me-2"></i>Paiement</h6>
+            </div>
+            <div class="admin-card-body">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-truck text-success"></i>
+                    <span class="fw-600">Paiement à la livraison</span>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.TrackingNumber))
+                {
+                    <hr />
+                    <div class="order-info-title">Numéro de suivi</div>
+                    <div class="order-info-value">@Model.TrackingNumber</div>
+                }
+            </div>
+        </div>
+
+        <!-- Numéro de suivi -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h6><i class="fas fa-truck me-2"></i>Numéro de suivi</h6>
+            </div>
+            <div class="admin-card-body">
+                <form asp-action="UpdateTracking" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <div class="admin-form-field">
+                        <input type="text" name="trackingNumber"
+                               value="@Model.TrackingNumber"
+                               class="admin-input"
+                               placeholder="Ex: TN123456789" />
+                    </div>
+                    <button type="submit" class="admin-btn-primary mt-2 w-100">
+                        <i class="fas fa-save me-2"></i>Enregistrer
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>

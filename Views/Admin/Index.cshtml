@@ -1,0 +1,474 @@
+﻿@{
+    ViewData["Title"] = "Tableau de bord";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    string[] moisLabels = { "Jan", "Fév", "Mar", "Avr", "Mai",
+                            "Juin", "Juil", "Aoû", "Sep", "Oct",
+                            "Nov", "Déc" };
+}
+
+<div class="admin-page-header">
+    <div>
+        <h4 class="admin-page-title">Tableau de bord</h4>
+        <p class="admin-page-sub">
+            Bienvenue ! Voici un aperçu de votre boutique.
+        </p>
+    </div>
+</div>
+
+<!-- ══ KPIs ══════════════════════════════════ -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background:#fce8ee">
+                <i class="fas fa-box" style="color:#c48898"></i>
+            </div>
+            <div class="kpi-value">@ViewBag.TotalProducts</div>
+            <div class="kpi-label">Produits</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background:#e8f5e9">
+                <i class="fas fa-shopping-bag" style="color:#2d9e5f"></i>
+            </div>
+            <div class="kpi-value">@ViewBag.TotalOrders</div>
+            <div class="kpi-label">Commandes</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background:#e8eaf6">
+                <i class="fas fa-users" style="color:#5c6bc0"></i>
+            </div>
+            <div class="kpi-value">@ViewBag.TotalUsers</div>
+            <div class="kpi-label">Clients</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background:#fff8e1">
+                <i class="fas fa-coins" style="color:#d4a843"></i>
+            </div>
+            <div class="kpi-value">
+                @(((decimal)ViewBag.TotalRevenue).ToString("0.00")) DT
+            </div>
+            <div class="kpi-label">Chiffre d'affaires</div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ GRAPHIQUES ════════════════════════════ -->
+<div class="row g-4 mb-4">
+
+    <!-- CA par mois -->
+    <div class="col-lg-6">
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h6>
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Chiffre d'affaires par mois
+                </h6>
+            </div>
+            <div class="admin-card-body">
+                <canvas id="caChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Commandes par mois -->
+    <div class="col-lg-6">
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h6>
+                    <i class="fas fa-chart-line me-2"></i>
+                    Commandes par mois
+                </h6>
+            </div>
+            <div class="admin-card-body">
+                <canvas id="cmdChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ══ TOP PRODUITS + CATÉGORIES ═════════════ -->
+<div class="row g-4 mb-4">
+
+    <!-- Top 5 produits -->
+    <div class="col-lg-7">
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h6>
+                    <i class="fas fa-trophy me-2" style="color:#d4a843"></i>
+                    Top 5 produits les plus vendus
+                </h6>
+            </div>
+            <div class="admin-card-body p-0">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Produit</th>
+                            <th>Vendus</th>
+                            <th>Progression</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.TopProduits != null)
+                        {
+                            int rank = 1;
+                            int max = 1;
+                            foreach (var p in ViewBag.TopProduits)
+                            {
+                                if (rank == 1) max = (int)p.TotalVendu;
+                                int pct = max > 0
+                                    ? (int)((double)p.TotalVendu / max * 100)
+                                    : 0;
+                                string medal = rank == 1 ? "🥇"
+                                             : rank == 2 ? "🥈"
+                                             : rank == 3 ? "🥉" : "  ";
+                                <tr>
+                                    <td>@medal</td>
+                                    <td>
+                                        <div class="admin-product-cell">
+                                            <div class="admin-product-img">
+                                                @if (p.ImageUrl != null)
+                                                {
+                                                    <img src="@p.ImageUrl"
+                                                         alt="@p.Name" />
+                                                }
+                                                else
+                                                {
+                                                    <i class="fas fa-image"></i>
+                                                }
+                                            </div>
+                                            <div class="admin-product-name">
+                                                @p.Name
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong>@p.TotalVendu</strong>
+                                    </td>
+                                    <td style="min-width:100px">
+                                        <div class="promo-usage-bar">
+                                            <div class="promo-usage-fill"
+                                                 style="width:@(pct)%">
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                rank++;
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top 2 catégories -->
+    <div class="col-lg-5">
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h6>
+                    <i class="fas fa-tags me-2" style="color:#c48898"></i>
+                    Top 2 catégories les plus vendues
+                </h6>
+            </div>
+            <div class="admin-card-body">
+                @if (ViewBag.TopCategories != null)
+                {
+                    int rankC = 1;
+                    foreach (var cat in ViewBag.TopCategories)
+                    {
+                        string medal = rankC == 1 ? "🥇" : "🥈";
+                        <div class="top-cat-card">
+                            <span class="top-cat-medal">@medal</span>
+                            <div class="top-cat-info">
+                                <div class="top-cat-name">@cat.Name</div>
+                                <div class="top-cat-count">
+                                    @cat.TotalVendu articles vendus
+                                </div>
+                            </div>
+                            <div class="top-cat-badge">
+                                #@rankC
+                            </div>
+                        </div>
+                        rankC++;
+                    }
+                }
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ══ TOP CLIENTS + STOCK CRITIQUE ══════════ -->
+<div class="row g-4 mb-4">
+
+    <!-- Top 3 clients -->
+    <div class="col-lg-6">
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h6>
+                    <i class="fas fa-crown me-2" style="color:#d4a843"></i>
+                    Top 3 clients (points fidélité)
+                </h6>
+            </div>
+            <div class="admin-card-body p-0">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Client</th>
+                            <th>Niveau</th>
+                            <th>Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.TopClients != null)
+                        {
+                            int rankCl = 1;
+                            foreach (var cl in ViewBag.TopClients)
+                            {
+                                string medal = rankCl == 1 ? "🥇"
+                                             : rankCl == 2 ? "🥈" : "🥉";
+                                string lvlColor =
+                                    cl.Level == "Platinum" ? "#5c6bc0" :
+                                    cl.Level == "Gold" ? "#d4a843" :
+                                    cl.Level == "Silver" ? "#9e9e9e" :
+                                                             "#cd7f32";
+                                <tr>
+                                    <td>@medal</td>
+                                    <td>
+                                        <div class="admin-client-name">
+                                            @cl.FullName
+                                        </div>
+                                        <div class="admin-client-email">
+                                            @cl.Email
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span style="color:@lvlColor;
+                                            font-weight:700;
+                                            font-size:0.82rem">
+                                            @cl.Level
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <strong style="color:#c48898">
+                                            @cl.Points pts
+                                        </strong>
+                                    </td>
+                                </tr>
+                                rankCl++;
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock critique -->
+    <div class="col-lg-6">
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h6>
+                    <i class="fas fa-exclamation-triangle me-2"
+                       style="color:#e74c3c"></i>
+                    Stock critique
+                </h6>
+            </div>
+            <div class="admin-card-body p-0">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Produit</th>
+                            <th>Stock</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.LowStock != null)
+                        {
+                            foreach (var p in ViewBag.LowStock)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="admin-product-name">
+                                            @p.Name
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span style="color:#e74c3c;
+                                            font-weight:700">
+                                            @p.Stock restants
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a asp-controller="Product"
+                                               asp-action="Edit"
+                                               asp-route-id="@p.Id"
+                                               class="admin-action-btn activate">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ══ COMMANDES RÉCENTES ═════════════════════ -->
+<div class="admin-card mb-4">
+    <div class="admin-card-header">
+        <h6>
+            <i class="fas fa-clock me-2"></i>Commandes récentes
+        </h6>
+        <a asp-action="Orders" class="btn-link-rose" style="font-size:0.82rem">
+            Voir tout
+        </a>
+    </div>
+    <div class="admin-card-body p-0">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Client</th>
+                    <th>Total</th>
+                    <th>Statut</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (ViewBag.RecentOrders != null)
+                {
+                    foreach (var o in ViewBag.RecentOrders)
+                    {
+                        <tr>
+                            <td>#@o.Id</td>
+                            <td>@o.CustomerName</td>
+                            <td>
+                                <strong>@o.Total.ToString("0.00") DT</strong>
+                            </td>
+                            <td>
+                                <span class="order-status status-@o.Status.ToLower().Replace(" ", "")">
+                                    @o.Status
+                                </span>
+                            </td>
+                            <td style="font-size:0.8rem; color:#9a7080">
+                                @o.CreatedAt.ToString("dd/MM/yyyy")
+                            </td>
+                            <td>
+                                <a asp-action="OrderDetails"
+                                       asp-route-id="@o.Id"
+                                       class="admin-action-btn activate">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // ── Données CA par mois ──────────────────
+        @{
+            var caData = ViewBag.CaParMois as dynamic ?? new List<dynamic>();
+            var cmdData = ViewBag.CmdParMois as dynamic ?? new List<dynamic>();
+
+            var caLabels = new List<string>();
+            var caValues = new List<string>();
+            var cmdLabels = new List<string>();
+            var cmdValues = new List<string>();
+
+            string[] mois = { "", "Jan", "Fév", "Mar", "Avr", "Mai",
+                          "Juin", "Juil", "Aoû", "Sep", "Oct",
+                          "Nov", "Déc" };
+
+            if (caData != null)
+            {
+                foreach (var item in caData)
+                {
+                    caLabels.Add($"{mois[item.Mois]} {item.Annee}");
+                    caValues.Add(item.Total.ToString("F2",
+                        System.Globalization.CultureInfo.InvariantCulture));
+                }
+            }
+
+            if (cmdData != null)
+            {
+                foreach (var item in cmdData)
+                {
+                    cmdLabels.Add($"{mois[item.Mois]} {item.Annee}");
+                    cmdValues.Add(item.Count.ToString());
+                }
+            }
+        }
+
+        // CA Chart
+        new Chart(document.getElementById('caChart'), {
+        type: 'bar',
+        data: {
+        labels: [@Html.Raw(string.Join(",",
+                        caLabels.Select(l => $"'{l}'")))],
+        datasets: [{
+        label: 'CA (DT)',
+        data: [@Html.Raw(string.Join(",", caValues))],
+        backgroundColor: 'rgba(196,136,152,0.6)',
+        borderColor: '#c48898',
+        borderWidth: 2,
+        borderRadius: 6
+        }]
+        },
+        options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+        y: { beginAtZero: true,
+        ticks: { callback: v => v + ' DT' } }
+        }
+        }
+        });
+
+        // Commandes Chart
+        new Chart(document.getElementById('cmdChart'), {
+        type: 'line',
+        data: {
+        labels: [@Html.Raw(string.Join(",",
+                        cmdLabels.Select(l => $"'{l}'")))],
+        datasets: [{
+        label: 'Commandes',
+        data: [@Html.Raw(string.Join(",", cmdValues))],
+        backgroundColor: 'rgba(212,168,67,0.15)',
+        borderColor: '#d4a843',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true,
+        pointBackgroundColor: '#d4a843',
+        pointRadius: 4
+        }]
+        },
+        options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+        }
+        });
+    </script>
+}

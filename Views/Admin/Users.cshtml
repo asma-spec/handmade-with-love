@@ -1,0 +1,148 @@
+﻿@model IEnumerable<Projet.Models.User>
+@{
+    ViewData["Title"] = "Gestion des utilisateurs";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-page-header">
+    <div>
+        <h4 class="admin-page-title">Utilisateurs</h4>
+        <p class="admin-page-sub">@Model.Count() utilisateur(s)</p>
+    </div>
+</div>
+
+<!-- Filtres -->
+<div class="admin-card mb-4">
+    <div class="admin-card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-5">
+                <input type="text" name="search" value="@ViewBag.Search"
+                       class="admin-input" placeholder="Nom ou email..." />
+            </div>
+            <div class="col-md-3">
+                <select name="role" class="admin-input" onchange="this.form.submit()">
+                    <option value="">Tous les rôles</option>
+                    <option value="Client" selected="@(ViewBag.Role == "Client")">Client</option>
+                    <option value="Admin" selected="@(ViewBag.Role == "Admin")">Admin</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="admin-btn-primary w-100">
+                    <i class="fas fa-search me-1"></i>Filtrer
+                </button>
+                <a asp-action="Users" class="admin-btn-outline w-100 text-center">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Table -->
+<div class="admin-card">
+    <div class="admin-card-body p-0">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Utilisateur</th>
+                    <th>Rôle</th>
+                    <th>Points</th>
+                    <th>Niveau</th>
+                    <th>Inscrit le</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var u in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="admin-client-cell">
+                                <div class="admin-user-avatar-sm">
+                                    @u.FullName.Substring(0, 1).ToUpper()
+                                </div>
+                                <div>
+                                    <div class="admin-client-name">@u.FullName</div>
+                                    <div class="admin-client-email">@u.Email</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="@(u.Role == "Admin" ? "role-badge-admin" : "role-badge-client")">
+                                @u.Role
+                            </span>
+                        </td>
+                        <td>@(u.LoyaltyAccount?.Points ?? 0) pts</td>
+                        <td>@(u.LoyaltyAccount?.Level ?? "—")</td>
+                        <td class="text-muted">@u.CreatedAt.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            <span class="@(u.IsActive ? "status-badge-active" : "status-badge-inactive")">
+                                @(u.IsActive ? "Actif" : "Inactif")
+                            </span>
+                        </td>
+                        <td>
+                            <div class="admin-actions">
+                                <a asp-action="ToggleUser" asp-route-id="@u.Id"
+                                       class="admin-action-btn @(u.IsActive ? "deactivate" : "activate")"
+                                       title="@(u.IsActive ? "Désactiver" : "Activer")">
+                                    <i class="fas @(u.IsActive ? "fa-user-slash" : "fa-user-check")"></i>
+                                </a>
+                                <button class="admin-action-btn edit"
+                                        onclick="showAddPoints(@u.Id, '@u.FullName')"
+                                        title="Ajouter des points">
+                                    <i class="fas fa-star"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal ajout points -->
+<div class="admin-modal" id="pointsModal" style="display:none">
+    <div class="admin-modal-box">
+        <div class="admin-modal-header">
+            <h6>Ajouter des points fidélité</h6>
+            <button onclick="closeModal()" class="admin-modal-close">×</button>
+        </div>
+        <form asp-action="AddPoints" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="userId" id="modalUserId" />
+            <div class="admin-modal-body">
+                <p>Client : <strong id="modalUserName"></strong></p>
+                <div class="auth-field">
+                    <label class="auth-label">Nombre de points</label>
+                    <input type="number" name="points" class="admin-input"
+                           placeholder="Ex: 100" required />
+                    <small class="text-muted">
+                        Utilisez un nombre négatif pour retirer des points.
+                    </small>
+                </div>
+            </div>
+            <div class="admin-modal-footer">
+                <button type="button" onclick="closeModal()"
+                        class="admin-btn-outline">
+                    Annuler
+                </button>
+                <button type="submit" class="admin-btn-primary">
+                    <i class="fas fa-star me-1"></i>Confirmer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showAddPoints(id, name) {
+            document.getElementById('modalUserId').value   = id;
+            document.getElementById('modalUserName').textContent = name;
+            document.getElementById('pointsModal').style.display = 'flex';
+        }
+        function closeModal() {
+            document.getElementById('pointsModal').style.display = 'none';
+        }
+    </script>
+}

@@ -1,0 +1,117 @@
+﻿@model Projet.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Connexion";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="auth-page">
+    <div class="auth-container">
+
+        <!-- Côté gauche décoratif -->
+        <div class="auth-left">
+            <div class="auth-left-content">
+                <i class="fas fa-gem auth-logo-icon"></i>
+                <h2 class="auth-left-title">Bon retour !</h2>
+                <p class="auth-left-desc">
+                    Connectez-vous pour accéder à vos commandes,
+                    votre wishlist et vos points fidélité.
+                </p>
+                <div class="auth-features">
+                    <div class="auth-feature">
+                        <i class="fas fa-star"></i>
+                        <span>Programme fidélité exclusif</span>
+                    </div>
+                    <div class="auth-feature">
+                        <i class="fas fa-truck"></i>
+                        <span>Suivi de livraison en temps réel</span>
+                    </div>
+                    <div class="auth-feature">
+                        <i class="fas fa-heart"></i>
+                        <span>Wishlist & recommandations IA</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulaire -->
+        <div class="auth-right">
+            <div class="auth-form-wrap">
+                <div class="auth-header">
+                    <h3 class="auth-title">Connexion</h3>
+                    <p class="auth-subtitle">Ravi de vous revoir 🌸</p>
+                </div>
+
+                <form asp-action="Login" method="post">
+                    <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+                    @Html.AntiForgeryToken()
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="auth-alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            @Html.ValidationSummary(false, "", new { @class = "mb-0" })
+                        </div>
+                    }
+
+                    <div class="auth-field">
+                        <label asp-for="Email" class="auth-label"></label>
+                        <div class="auth-input-wrap">
+                            <i class="fas fa-envelope auth-input-icon"></i>
+                            <input asp-for="Email" class="auth-input"
+                                   placeholder="votre@email.com" autocomplete="email" />
+                        </div>
+                        <span asp-validation-for="Email" class="auth-error"></span>
+                    </div>
+
+                    <div class="auth-field">
+                        <label asp-for="Password" class="auth-label"></label>
+                        <div class="auth-input-wrap">
+                            <i class="fas fa-lock auth-input-icon"></i>
+                            <input asp-for="Password" class="auth-input"
+                                   placeholder="••••••••" id="passwordInput" />
+                            <button type="button" class="auth-eye" onclick="togglePassword()">
+                                <i class="fas fa-eye" id="eyeIcon"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="auth-error"></span>
+                    </div>
+
+                    <div class="auth-remember">
+                        <label class="auth-check-label">
+                            <input asp-for="RememberMe" type="checkbox" class="auth-checkbox" />
+                            <span>Se souvenir de moi</span>
+                        </label>
+                        <a href="#" class="auth-forgot">Mot de passe oublié ?</a>
+                    </div>
+
+                    <button type="submit" class="auth-btn">
+                        <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                    </button>
+
+                    <div class="auth-divider"><span>ou</span></div>
+
+                    <p class="auth-switch">
+                        Pas encore de compte ?
+                        <a asp-action="Register" class="auth-switch-link">Créer un compte</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function togglePassword() {
+            const input = document.getElementById('passwordInput');
+            const icon  = document.getElementById('eyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+    </script>
+}

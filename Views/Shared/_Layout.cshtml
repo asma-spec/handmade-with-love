@@ -1,0 +1,470 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — Handmade with Love</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+
+    <!-- ═══ NAVBAR ═══════════════════════════════════════ -->
+    <nav class="navbar navbar-expand-lg sticky-top navbar-custom shadow-lg">
+        <div class="container">
+
+            <!-- Logo -->
+            <a class="navbar-brand-luxury" asp-controller="Home" asp-action="Index">
+    <div class="navbar-brand-text">
+        <span class="brand-name">Handmade</span>
+        <span class="brand-sub">with Love</span>
+    </div>
+    <img src="~/images/logo.png" alt="Handmade with Love"
+         class="navbar-logo" />
+</a>
+
+            <button class="navbar-toggler" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#navMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navMenu">
+
+                <!-- Liens principaux -->
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom"
+                               asp-controller="Home" asp-action="Index">
+                            <i class="fas fa-home me-1"></i>Accueil
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom"
+                               asp-controller="Shop" asp-action="Index">
+                            <i class="fas fa-store me-1"></i>Boutique
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link nav-link-custom dropdown-toggle"
+                               href="#" data-bs-toggle="dropdown">
+                            <i class="fas fa-tags me-1"></i>Catégories
+                        </a>
+                        <ul class="dropdown-menu dropdown-custom">
+                            <li>
+                                <a class="dropdown-item dropdown-item-custom"
+                                       asp-controller="Shop" asp-action="Categories">
+                                    <i class="fas fa-th me-2"></i>Toutes les catégories
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider border-secondary" /></li>
+                            <li>
+                                <a class="dropdown-item dropdown-item-custom"
+                                       asp-controller="Shop" asp-action="Index"
+                                       asp-route-categoryId="1">
+                                    <i class="fas fa-ring me-2"></i>Bagues
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item dropdown-item-custom"
+                                       asp-controller="Shop" asp-action="Index"
+                                       asp-route-categoryId="2">
+                                    <i class="fas fa-star me-2"></i>Boucles
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item dropdown-item-custom"
+                                       asp-controller="Shop" asp-action="Index"
+                                       asp-route-categoryId="3">
+                                    <i class="fas fa-circle-dot me-2"></i>Collier
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item dropdown-item-custom"
+                                       asp-controller="Shop" asp-action="Index"
+                                       asp-route-categoryId="4">
+                                    <i class="fas fa-crown me-2"></i>Serre-tête
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item dropdown-item-custom"
+                                       asp-controller="Shop" asp-action="Index"
+                                       asp-route-categoryId="5">
+                                    <i class="fas fa-briefcase me-2"></i>Pochette
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item dropdown-item-custom"
+                                       asp-controller="Shop" asp-action="Index"
+                                       asp-route-categoryId="6">
+                                    <i class="fas fa-basket-shopping me-2"></i>Couffin traditionnel
+                                </a>
+                            </li>
+                           
+                            <li>
+                                <a class="dropdown-item dropdown-item-custom"
+                                       asp-controller="Shop" asp-action="Index"
+                                       asp-route-categoryId="7">
+                                    <i class="fas fa-layer-group me-2"></i>Séries
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <!-- Barre de recherche -->
+                <form class="d-flex me-3"
+                      asp-controller="Shop" asp-action="Search" method="get">
+                    <div class="input-group search-group">
+                        <input class="form-control search-input" type="search"
+                               name="q" placeholder="Rechercher un produit..." />
+                        <button class="btn btn-search" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Icônes droite -->
+                <ul class="navbar-nav align-items-center gap-2">
+
+                    <!-- Panier -->
+                    <li class="nav-item">
+                        <a class="nav-link nav-icon-btn position-relative"
+                               asp-controller="Cart" asp-action="Index">
+                            <i class="fas fa-shopping-bag fs-5"></i>
+                            <span class="cart-badge">0</span>
+                        </a>
+                    </li>
+
+                    <!-- Wishlist -->
+                    <li class="nav-item">
+                        <a class="nav-link nav-icon-btn"
+                               asp-controller="Wishlist" asp-action="Index">
+                            <i class="fas fa-heart fs-5"></i>
+                        </a>
+                    </li>
+                    @if (Context.Session.GetInt32("UserId") != null)
+                    {
+                        <li class="nav-item position-relative me-2">
+                            <a class="nav-link notif-bell" href="/Notification/Index"
+                                   title="Notifications">
+                                <i class="fas fa-bell"></i>
+                                <span class="notif-badge" id="notifBadge"
+                                      style="display:none">0</span>
+                            </a>
+                        </li>
+                    }
+                    <!-- Compte — Dynamique selon session -->
+                    @if (Context.Session.GetString("UserName") != null)
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link nav-icon-btn dropdown-toggle d-flex align-items-center gap-2"
+                                   href="#" data-bs-toggle="dropdown">
+                                <div class="user-avatar"
+                                     data-userid="@Context.Session.GetInt32("UserId")">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <span class="d-none d-lg-inline text-gold fw-500">
+                                    @Context.Session.GetString("UserName")
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-custom dropdown-menu-end">
+                                <li class="dropdown-header-custom">
+                                    <small class="text-muted">Connecté en tant que</small>
+                                    <div class="fw-600 text-gold">
+                                        @Context.Session.GetString("UserName")
+                                    </div>
+                                </li>
+                                <li><hr class="dropdown-divider border-secondary" /></li>
+                                <li>
+                                    <a class="dropdown-item dropdown-item-custom"
+                                           asp-controller="Account" asp-action="Profile">
+                                        <i class="fas fa-user me-2"></i>Mon profil
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item dropdown-item-custom"
+                                           asp-controller="Account" asp-action="Orders">
+                                        <i class="fas fa-box me-2"></i>Mes commandes
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item dropdown-item-custom"
+                                           asp-controller="Account" asp-action="Reviews">
+                                        <i class="fas fa-star me-2"></i>Mes avis
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item dropdown-item-custom"
+                                           asp-controller="Account" asp-action="Loyalty">
+                                        <i class="fas fa-star me-2"></i>Mes points
+                                    </a>
+                                </li>
+                                @if (Context.Session.GetString("UserRole") == "Admin")
+                                {
+                                    <li><hr class="dropdown-divider border-secondary" /></li>
+                                    <li>
+                                        <a class="dropdown-item dropdown-item-admin"
+                                               asp-controller="Admin" asp-action="Index">
+                                            <i class="fas fa-cogs me-2"></i>Administration
+                                        </a>
+                                    </li>
+                                }
+                                <li><hr class="dropdown-divider border-secondary" /></li>
+                                <li>
+                                    <a class="dropdown-item dropdown-item-logout"
+                                           asp-controller="Account" asp-action="Logout">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="btn btn-outline-gold me-2"
+                                   asp-controller="Account" asp-action="Login">
+                                <i class="fas fa-sign-in-alt me-1"></i>Connexion
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-gold"
+                                   asp-controller="Account" asp-action="Register">
+                                <i class="fas fa-user-plus me-1"></i>Inscription
+                            </a>
+                        </li>
+                    }
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ═══ ALERTES ═══════════════════════════════════════ -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-toast alert-toast-success">
+            <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close-toast"
+                    onclick="this.parentElement.remove()">
+                ×
+            </button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert-toast alert-toast-error">
+            <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close-toast"
+                    onclick="this.parentElement.remove()">
+                ×
+            </button>
+        </div>
+    }
+
+    <!-- ═══ CONTENU ════════════════════════════════════════ -->
+    <main>
+        @RenderBody()
+    </main>
+
+    <!-- ═══ FOOTER ════════════════════════════════════════ -->
+    <footer class="footer-custom mt-5">
+        <div class="footer-top">
+            <div class="container">
+                <div class="row g-4">
+                    <div class="col-lg-4">
+                        <h5 class="footer-brand">
+                            <i class="fas fa-gem me-2"></i>Handmade with Love
+                        </h5>
+                        <p class="footer-desc">
+                            Votre boutique d'accessoires premium.
+                            Qualité, style et livraison rapide partout en Tunisie.
+                        </p>
+                        <div class="social-links">
+                            <a href="https://www.facebook.com/profile.php?id=61584495221003"
+                                   target="_blank" class="social-btn">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="https://www.instagram.com/handmadelove667/"
+                                   target="_blank" class="social-btn">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-4">
+                        <h6 class="footer-title">Boutique</h6>
+                        <ul class="footer-links">
+                            <li>
+                                <a asp-controller="Shop" asp-action="Index">
+                                    Nouveautés
+                                </a>
+                            </li>
+                            <li>
+                                <a asp-controller="Shop" asp-action="Index">
+                                    Promotions
+                                </a>
+                            </li>
+                            <li>
+                                <a asp-controller="Shop" asp-action="Index">
+                                    Meilleures ventes
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-2 col-md-4">
+                        <h6 class="footer-title">Mon compte</h6>
+                        <ul class="footer-links">
+                            <li>
+                                <a asp-controller="Account" asp-action="Orders">
+                                    Mes commandes
+                                </a>
+                            </li>
+                            <li>
+                                <a asp-controller="Account" asp-action="Loyalty">
+                                    Mes points
+                                </a>
+                            </li>
+                            <li>
+                                <a asp-controller="Wishlist" asp-action="Index">
+                                    Wishlist
+                                </a>
+                            </li>
+                           
+                        </ul>
+                    </div>
+                    <div class="col-lg-4 col-md-4">
+                        <h6 class="footer-title">Contact</h6>
+                        <ul class="footer-contact">
+                            <li>
+                                <i class="fas fa-envelope"></i>
+                                sameh.khelil@gmail.com
+                            </li>
+                            <li>
+                                <i class="fas fa-phone"></i>
+                                +216 21520272
+                            </li>
+                            <li>
+                                <i class="fas fa-map-marker-alt"></i>
+                                Tunisie / Hammamet
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container text-center">
+                <p>
+                    &copy; @DateTime.Now.Year
+                    <span class="text-gold">Handmade with Love</span>
+                    — Tous droits réservés
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ═══ WIDGET CHAT ═══════════════════════════════════ -->
+    <div class="chat-widget" id="chatWidget">
+
+        <!-- Bouton flottant -->
+        <button class="chat-fab" id="chatFab" onclick="toggleChat()">
+            <i class="fas fa-comments" id="chatFabIcon"></i>
+            <span class="chat-notif" id="chatNotif" style="display:none">1</span>
+        </button>
+
+        <!-- Fenêtre chat -->
+        <div class="chat-window" id="chatWindow">
+
+            <!-- Header -->
+            <div class="chat-header">
+                <div class="chat-header-info">
+                    <div class="chat-avatar-agent">
+                        <i class="fas fa-headset"></i>
+                        <span class="chat-online-dot"></span>
+                    </div>
+                    <div>
+                        <div class="chat-agent-name">Support Handmade with Love</div>
+                        <div class="chat-agent-status">
+                            <span class="chat-dot"></span> En ligne
+                        </div>
+                    </div>
+                </div>
+                <button class="chat-close" onclick="toggleChat()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Messages -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-msg bot">
+                    <div class="chat-bubble">
+                        👋 Bonjour ! Je suis l'assistant Handmade with Love.<br />
+                        Comment puis-je vous aider ?
+                    </div>
+                    <div class="chat-time">Maintenant</div>
+                </div>
+                <div class="chat-suggestions">
+                    <button class="chat-suggest"
+                            onclick="sendSuggest('Délais de livraison ?')">
+                        🚚 Livraison
+                    </button>
+                    <button class="chat-suggest"
+                            onclick="sendSuggest('Comment retourner un article ?')">
+                        🔄 Retours
+                    </button>
+                    <button class="chat-suggest"
+                            onclick="sendSuggest('Modes de paiement ?')">
+                        💳 Paiement
+                    </button>
+                    <button class="chat-suggest"
+                            onclick="sendSuggest('Suivi de commande ?')">
+                        📦 Commande
+                    </button>
+                </div>
+            </div>
+
+            <!-- Input -->
+            <div class="chat-input-wrap">
+                <input type="text" id="chatInput" class="chat-input"
+                       placeholder="Écrivez votre message..."
+                       onkeypress="if(event.key==='Enter') sendMessage()" />
+                <button class="chat-send" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+    @section Scripts {
+        <script>
+            // Vérifier les notifs non lues toutes les 30 secondes
+            function checkNotifs() {
+            fetch('/Notification/UnreadCount')
+            .then(r => r.json())
+            .then(data => {
+            const badge = document.getElementById('notifBadge');
+            if (badge) {
+            if (data.count > 0) {
+            badge.textContent   = data.count;
+            badge.style.display = 'flex';
+            } else {
+            badge.style.display = 'none';
+            }
+            }
+            });
+            }
+
+            checkNotifs();
+            setInterval(checkNotifs, 30000);
+        </script>
+    }
+</body>
+</html>

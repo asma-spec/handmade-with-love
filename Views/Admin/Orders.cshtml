@@ -1,0 +1,89 @@
+﻿@model IEnumerable<Projet.Models.Order>
+@{
+    ViewData["Title"] = "Gestion des commandes";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-page-header">
+    <div>
+        <h4 class="admin-page-title">Commandes</h4>
+        <p class="admin-page-sub">@Model.Count() commande(s) trouvée(s)</p>
+    </div>
+</div>
+
+<!-- Filtres -->
+<div class="admin-card mb-4">
+    <div class="admin-card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <input type="text" name="search" value="@ViewBag.Search"
+                       class="admin-input" placeholder="Nom ou email client..." />
+            </div>
+            <div class="col-md-4">
+                <select name="status" class="admin-input"
+                        onchange="this.form.submit()">
+                    <option value="">Tous les statuts</option>
+                    @foreach (var s in ViewBag.Statuses)
+                    {
+                        <option value="@s" selected="@(ViewBag.Status == s)">@s</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="admin-btn-primary w-100">
+                    <i class="fas fa-search me-1"></i>Filtrer
+                </button>
+                <a asp-action="Orders" class="admin-btn-outline w-100 text-center">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Table -->
+<div class="admin-card">
+    <div class="admin-card-body p-0">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Client</th>
+                    <th>Articles</th>
+                    <th>Total</th>
+                    <th>Statut</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var o in Model)
+                {
+                    <tr>
+                        <td><strong>#@o.Id</strong></td>
+                        <td>
+                            <div class="admin-client-cell">
+                                <div class="admin-client-name">@o.CustomerName</div>
+                                <div class="admin-client-email">@o.CustomerEmail</div>
+                            </div>
+                        </td>
+                        <td>@o.Items?.Count article(s)</td>
+                        <td><strong>@o.Total.ToString("0.00") DT</strong></td>
+                        <td>
+                            <span class="order-status status-@o.Status.ToLower().Replace(" ", "")">
+                                @o.Status
+                            </span>
+                        </td>
+                        <td class="text-muted">@o.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            <a asp-action="OrderDetails" asp-route-id="@o.Id"
+                                   class="admin-action-btn edit" title="Détails">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

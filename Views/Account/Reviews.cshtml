@@ -1,0 +1,231 @@
+﻿@model IEnumerable<Projet.Models.Review>
+@{
+    ViewData["Title"] = "Mes avis";
+    var purchasedProducts = ViewBag.PurchasedProducts as List<Projet.Models.Product>
+                         ?? new List<Projet.Models.Product>();
+}
+
+<div class="shop-header">
+    <div class="container">
+        <h1 class="shop-title">
+            <i class="fas fa-star me-2"></i>Mes avis
+        </h1>
+        <p class="shop-subtitle">@Model.Count() avis laissé(s)</p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-4">
+
+        <!-- ══ Mes avis existants ══════════════ -->
+        <div class="col-lg-8">
+            @if (Model.Any())
+            {
+                <div class="d-flex flex-column gap-3">
+                    @foreach (var review in Model)
+                    {
+                        <div class="review-page-card">
+                            <div class="review-page-header">
+
+                                <!-- Image produit -->
+                                <div class="review-page-img">
+                                    @if (review.Product != null && review.Product.ImageUrl != null)
+                                    {
+                                        <img src="@review.Product.ImageUrl"
+                                             alt="@review.Product.Name" />
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-image"></i>
+                                    }
+                                </div>
+
+                                <!-- Infos -->
+                                <div class="review-page-info">
+                                    <div class="review-page-product">
+                                        @(review.Product != null ? review.Product.Name : "Produit")
+                                    </div>
+                                    <div class="review-stars mt-1">
+                                        @for (int s = 1; s <= 5; s++)
+                                        {
+                                            <i class="fas fa-star @(s <= review.Rating ? "star-on" : "star-off")"></i>
+                                        }
+                                    </div>
+                                    <div class="review-page-date">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        @review.CreatedAt.ToString("dd/MM/yyyy")
+                                    </div>
+                                </div>
+
+                                <!-- Statut -->
+                                <div class="ms-auto text-end">
+                                    @if (review.IsApproved)
+                                    {
+                                        <span class="review-badge approved">
+                                            <i class="fas fa-check me-1"></i>Publié
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="review-badge pending">
+                                            <i class="fas fa-clock me-1"></i>En attente
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Commentaire -->
+                            <div class="review-page-comment">
+                                "@review.Comment"
+                            </div>
+
+                            <!-- Supprimer -->
+                            <div class="review-page-actions">
+                                <form asp-action="DeleteReview" method="post"
+                                      onsubmit="return confirm('Supprimer cet avis ?')">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@review.Id" />
+                                    <button type="submit" class="review-delete-btn">
+                                        <i class="fas fa-trash me-1"></i>Supprimer
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="cart-empty">
+                    <i class="fas fa-star"></i>
+                    <h4>Aucun avis</h4>
+                    <p>Vous n'avez pas encore laissé d'avis.</p>
+                    <a asp-controller="Shop" asp-action="Index"
+                           class="btn-filter-apply"
+                           style="max-width:220px; margin:0 auto">
+                        <i class="fas fa-store me-2"></i>Découvrir la boutique
+                    </a>
+                </div>
+            }
+        </div>
+
+        <!-- ══ Formulaire nouvel avis ══════════ -->
+        <div class="col-lg-4">
+            <div class="review-form-card">
+                <div class="review-form-header">
+                    <h5><i class="fas fa-pen me-2"></i>Laisser un avis</h5>
+                </div>
+                <div class="review-form-body">
+                    @if (purchasedProducts.Count > 0)
+                    {
+                        <form asp-action="AddReview" method="post">
+                            @Html.AntiForgeryToken()
+
+                            <!-- Produit -->
+                            <div class="admin-form-field mb-3">
+                                <label class="auth-label">Produit acheté</label>
+                                <select name="productId" class="admin-input" required>
+                                    <option value="">-- Choisir un produit --</option>
+                                    @foreach (var product in purchasedProducts)
+                                    {
+                                        <option value="@product.Id">@product.Name</option>
+                                    }
+                                </select>
+                                <small class="text-muted" style="font-size:0.75rem">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Uniquement les produits achetés et livrés.
+                                </small>
+                            </div>
+
+                            <!-- Étoiles -->
+                            <div class="admin-form-field mb-3">
+                                <label class="auth-label">Note</label>
+                                <div class="star-rating" id="starRating">
+                                    @for (int s = 1; s <= 5; s++)
+                                    {
+                                        <i class="fas fa-star star-pick" data-value="@s"></i>
+                                    }
+                                </div>
+                                <input type="hidden" name="rating"
+                                       id="ratingInput" value="5" />
+                            </div>
+
+                            <!-- Commentaire -->
+                            <div class="admin-form-field mb-3">
+                                <label class="auth-label">Commentaire</label>
+                                <textarea name="comment" class="admin-input"
+                                      rows="4" required
+                                          placeholder="Partagez votre expérience...">
+                                </textarea>
+                            </div>
+
+                            <!-- Info points -->
+                            <div class="review-form-info">
+                                <i class="fas fa-star me-2"></i>
+                                Votre avis sera publié après modération.
+                                Vous gagnerez <strong>+50 points</strong> ! 🌸
+                            </div>
+
+                            <button type="submit" class="auth-btn mt-3">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                Envoyer l'avis
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-box-open fa-2x mb-3 d-block"
+                               style="color:var(--rose-light)"></i>
+                            <p class="text-muted" style="font-size:0.88rem">
+                                Aucun produit disponible pour le moment.
+                            </p>
+                            <small class="text-muted" style="font-size:0.78rem">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Seuls les produits achetés et livrés
+                                peuvent être évalués.
+                            </small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const stars  = document.querySelectorAll('.star-pick');
+        const input  = document.getElementById('ratingInput');
+        let current  = 5;
+
+        if (stars.length > 0) {
+            stars.forEach(function(star) {
+                star.addEventListener('mouseover', function() {
+                    var val = parseInt(this.dataset.value);
+                    stars.forEach(function(s, i) {
+                        s.style.color = i < val ? '#f0a030' : '#ddd';
+                    });
+                });
+                star.addEventListener('mouseout', function() {
+                    stars.forEach(function(s, i) {
+                        s.style.color = i < current ? '#f0a030' : '#ddd';
+                    });
+                });
+                star.addEventListener('click', function() {
+                    current = parseInt(this.dataset.value);
+                    input.value = current;
+                    stars.forEach(function(s, i) {
+                        s.style.color = i < current ? '#f0a030' : '#ddd';
+                    });
+                });
+            });
+
+            // Init couleur étoiles
+            stars.forEach(function(s, i) {
+                s.style.color = i < current ? '#f0a030' : '#ddd';
+            });
+        }
+    </script>
+}

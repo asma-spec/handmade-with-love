@@ -1,0 +1,152 @@
+﻿@model Projet.Models.LoyaltyAccount
+@{
+    ViewData["Title"] = "Mes Points Fidélité";
+    int nextTarget = 1000;
+    int pct = 0;
+    if (Model != null)
+    {
+        if (Model.Level == "Silver") nextTarget = 5000;
+        if (Model.Level == "Gold") nextTarget = 10000;
+        if (Model.Level == "Platinum") nextTarget = 10000;
+        pct = Math.Min(100,
+            (int)((double)Model.Points / nextTarget * 100));
+    }
+}
+
+<div class="shop-header">
+    <div class="container">
+        <h1 class="shop-title">
+            <i class="fas fa-star me-2"></i>Mes Points Fidélité
+        </h1>
+        <p class="shop-subtitle">Cumulez des points à chaque achat</p>
+    </div>
+</div>
+
+<div class="container py-5">
+    @if (Model != null)
+    {
+        <!-- Niveau actuel -->
+        <div class="loyalty-hero-card mb-4">
+            <div class="loyalty-hero-left">
+                <div class="loyalty-hero-icon level-@Model.Level.ToLower()">
+                    @if (Model.Level == "Bronze")
+                    {
+                        <span>🥉</span>
+                    }
+                    else if (Model.Level == "Silver")
+                    {
+
+                        <span>🥈</span>
+                    }
+                    else if (Model.Level == "Gold")
+                    {
+
+                        <span>🥇</span>
+                    }
+                    else
+                    {
+
+                        <span>💎</span>
+                    }
+                </div>
+                <div>
+                    <div class="loyalty-hero-level">Niveau @Model.Level</div>
+                    <div class="loyalty-hero-points">@Model.Points points accumulés</div>
+                </div>
+            </div>
+            <div class="loyalty-hero-right">
+                <div class="loyalty-hero-next">
+                    Prochain niveau : @nextTarget pts
+                </div>
+                <div class="loyalty-progress-bar mt-2">
+                    <div class="loyalty-progress-fill" style="width:@(pct)%"></div>
+                </div>
+                <div class="loyalty-progress-label mt-1">
+                    @Model.Points / @nextTarget pts
+                </div>
+            </div>
+        </div>
+
+        <!-- Niveaux -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="loyalty-level-card @(Model.Level == "Bronze" ? "current" : "")">
+                    <span class="lvl-icon">🥉</span>
+                    <span class="lvl-name">Bronze</span>
+                    <span class="lvl-range">0 — 999 pts</span>
+                    <span class="lvl-benefit">Accès standard</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="loyalty-level-card @(Model.Level == "Silver" ? "current" : "")">
+                    <span class="lvl-icon">🥈</span>
+                    <span class="lvl-name">Silver</span>
+                    <span class="lvl-range">1000 — 4999 pts</span>
+                    <span class="lvl-benefit">-5% permanents</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="loyalty-level-card @(Model.Level == "Gold" ? "current" : "")">
+                    <span class="lvl-icon">🥇</span>
+                    <span class="lvl-name">Gold</span>
+                    <span class="lvl-range">5000 — 9999 pts</span>
+                    <span class="lvl-benefit">-10% permanents</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="loyalty-level-card @(Model.Level == "Platinum" ? "current" : "")">
+                    <span class="lvl-icon">💎</span>
+                    <span class="lvl-name">Platinum</span>
+                    <span class="lvl-range">10000+ pts</span>
+                    <span class="lvl-benefit">-15% + cadeaux</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Historique transactions -->
+        <div class="cart-card">
+            <div class="cart-card-header">
+                <h5><i class="fas fa-history me-2"></i>Historique des points</h5>
+            </div>
+            @if (Model.Transactions != null && Model.Transactions.Any())
+            {
+                <div class="loyalty-transactions">
+                    @foreach (var t in Model.Transactions
+                                            .OrderByDescending(x => x.CreatedAt))
+                    {
+                        <div class="loyalty-tx">
+                            <div class="loyalty-tx-icon @(t.Type == "Crédit" ? "credit" : "debit")">
+                                <i class="fas @(t.Type == "Crédit" ? "fa-plus" : "fa-minus")"></i>
+                            </div>
+                            <div class="loyalty-tx-info">
+                                <div class="loyalty-tx-reason">@t.Reason</div>
+                                <div class="loyalty-tx-date">
+                                    @t.CreatedAt.ToString("dd/MM/yyyy")
+                                </div>
+                            </div>
+                            <div class="loyalty-tx-points @(t.Type == "Crédit" ? "credit" : "debit")">
+                                @(t.Type == "Crédit" ? "+" : "-")@t.Points pts
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="p-4 text-center text-muted">
+                    <i class="fas fa-star fa-2x mb-3 d-block" style="color:var(--rose-light)"></i>
+                    Aucune transaction pour le moment.
+                    <br />Passez votre première commande pour gagner des points !
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="cart-empty">
+            <i class="fas fa-star"></i>
+            <h4>Compte fidélité introuvable</h4>
+            <p>Connectez-vous pour accéder à vos points.</p>
+        </div>
+    }
+</div>

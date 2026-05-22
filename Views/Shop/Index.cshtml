@@ -1,0 +1,287 @@
+﻿@model IEnumerable<Projet.Models.Product>
+@{
+    ViewData["Title"] = "Boutique";
+}
+
+<div class="shop-header">
+    <div class="container">
+        <h1 class="shop-title">Notre Boutique</h1>
+        <p class="shop-subtitle">@ViewBag.Total produit(s) disponible(s)</p>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row g-4">
+
+        <!-- ══ SIDEBAR FILTRES ══════════════════ -->
+        <div class="col-lg-3">
+            <div class="filter-card">
+                <form method="get" asp-action="Index">
+                    <h5 class="filter-title">
+                        <i class="fas fa-sliders-h me-2"></i>Filtres
+                    </h5>
+
+                    <div class="filter-section">
+                        <label class="filter-label">Recherche</label>
+                        <div class="input-group">
+                            <input type="text" name="search" value="@ViewBag.Search"
+                                   class="form-control filter-input"
+                                   placeholder="Mot-clé..." />
+                            <button class="btn btn-rose-sm" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <label class="filter-label">Catégories</label>
+                        <div class="filter-cats">
+                            <a asp-action="Index"
+                                   asp-route-search="@ViewBag.Search"
+                                   asp-route-sort="@ViewBag.Sort"
+                                   class="filter-cat-item @(ViewBag.CategoryId == null ? "active" : "")">
+                                <i class="fas fa-th me-2"></i>Toutes
+                            </a>
+                            @foreach (var cat in ViewBag.Categories)
+                            {
+                                <a asp-action="Index"
+                                       asp-route-categoryId="@cat.Id"
+                                       asp-route-search="@ViewBag.Search"
+                                       asp-route-sort="@ViewBag.Sort"
+                                       class="filter-cat-item @(ViewBag.CategoryId == cat.Id ? "active" : "")">
+                                    <i class="fas fa-tag me-2"></i>@cat.Name
+                                </a>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <label class="filter-label">Fourchette de prix</label>
+                        <div class="d-flex gap-2 align-items-center">
+                            <input type="number" name="minPrice" value="@ViewBag.MinPrice"
+                                   class="form-control filter-input text-center"
+                                   placeholder="Min" min="0" />
+                            <span class="text-muted">—</span>
+                            <input type="number" name="maxPrice" value="@ViewBag.MaxPrice"
+                                   class="form-control filter-input text-center"
+                                   placeholder="Max" min="0" />
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <label class="filter-label">Trier par</label>
+                        <select name="sort" class="form-select filter-input"
+                                onchange="this.form.submit()">
+                            <option value="" selected="@(ViewBag.Sort == null)">
+                                Nouveautés
+                            </option>
+                            <option value="price_asc"
+                                    selected="@(ViewBag.Sort == "price_asc")">
+                                Prix croissant
+                            </option>
+                            <option value="price_desc"
+                                    selected="@(ViewBag.Sort == "price_desc")">
+                                Prix décroissant
+                            </option>
+                            <option value="name" selected="@(ViewBag.Sort == "name")">
+                                Nom A-Z
+                            </option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-filter-apply">
+                        <i class="fas fa-check me-2"></i>Appliquer
+                    </button>
+                    <a asp-action="Index" class="btn-filter-reset">
+                        <i class="fas fa-times me-1"></i>Réinitialiser
+                    </a>
+                </form>
+            </div>
+        </div>
+
+        <!-- ══ GRILLE PRODUITS ═══════════════════ -->
+        <div class="col-lg-9">
+
+            <div class="results-bar">
+                <span class="results-count">
+                    <strong>@ViewBag.Total</strong> produit(s) trouvé(s)
+                    @if (!string.IsNullOrEmpty(ViewBag.Search as string))
+                    {
+                        <span>pour "<em>@ViewBag.Search</em>"</span>
+                    }
+                </span>
+                <div class="view-toggle">
+                    <button class="view-btn active" id="gridView"
+                            onclick="setView('grid')">
+                        <i class="fas fa-th"></i>
+                    </button>
+                    <button class="view-btn" id="listView"
+                            onclick="setView('list')">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+            </div>
+
+            @if (Model.Any())
+            {
+                <div class="row g-3" id="productsGrid">
+                    @foreach (var p in Model)
+                    {
+                        <div class="col-6 col-md-4 product-col">
+                            <div class="product-card h-100">
+                                @if (p.ImageUrl != null)
+                                {
+                                    <img src="@p.ImageUrl" alt="@p.Name" />
+                                }
+                                else
+                                {
+                                    <div class="product-img-placeholder">
+                                        <i class="fas fa-image"></i>
+                                    </div>
+                                }
+
+                                <div class="product-overlay">
+                                    <a asp-controller="Shop" asp-action="Details"
+                                           asp-route-id="@p.Id" class="overlay-btn">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a asp-controller="Cart" asp-action="Add"
+                                           asp-route-id="@p.Id" class="overlay-btn">
+                                        <i class="fas fa-shopping-bag"></i>
+                                    </a>
+                                    <a asp-controller="Wishlist" asp-action="Add"
+                                           asp-route-id="@p.Id" class="overlay-btn">
+                                        <i class="fas fa-heart"></i>
+                                    </a>
+                                </div>
+
+                                @if (p.Stock == 0)
+                                {
+                                    <span class="product-badge-out">Rupture</span>
+                                }
+                                else if (p.Stock <= 5)
+                                {
+                                    <span class="product-badge-low">
+                                        Dernier @p.Stock
+                                    </span>
+                                }
+
+                                @if (p.IsOnSale && p.DiscountPercent > 0)
+                                {
+                                    <span class="product-badge-promo">
+                                        -@p.DiscountPercent%
+                                    </span>
+                                }
+
+                                <div class="product-body">
+                                    <span class="product-cat">@p.Category?.Name</span>
+                                    <h6 class="product-name">@p.Name</h6>
+                                    <div class="product-footer">
+                                        @if (p.IsOnSale && p.DiscountPercent > 0)
+                                        {
+                                            decimal promoPrice = p.Price *
+                                                (1 - (p.DiscountPercent ?? 0) / 100);
+                                            <div>
+                                                <span class="product-price">
+                                                    @promoPrice.ToString("0.00") DT
+                                                </span>
+                                                <small class="text-muted text-decoration-line-through ms-1"
+                                                       style="font-size:0.75rem">
+                                                    @p.Price.ToString("0.00") DT
+                                                </small>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="product-price">
+                                                @p.Price.ToString("0.00") DT
+                                            </span>
+                                        }
+                                        <a asp-controller="Shop" asp-action="Details"
+                                               asp-route-id="@p.Id" class="btn-add-cart">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                @if (ViewBag.TotalPages > 1)
+                {
+                    <nav class="mt-4">
+                        <ul class="pagination-custom">
+                            @if (ViewBag.Page > 1)
+                            {
+                                <li>
+                                    <a asp-action="Index"
+                                           asp-route-page="@(ViewBag.Page - 1)"
+                                           asp-route-categoryId="@ViewBag.CategoryId"
+                                           asp-route-search="@ViewBag.Search"
+                                           asp-route-sort="@ViewBag.Sort"
+                                           class="page-btn">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                            }
+                            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                            {
+                                <li>
+                                    <a asp-action="Index"
+                                           asp-route-page="@i"
+                                           asp-route-categoryId="@ViewBag.CategoryId"
+                                           asp-route-search="@ViewBag.Search"
+                                           asp-route-sort="@ViewBag.Sort"
+                                           class="page-btn @(i == ViewBag.Page ? "active" : "")">
+                                        @i
+                                    </a>
+                                </li>
+                            }
+                            @if (ViewBag.Page < ViewBag.TotalPages)
+                            {
+                                <li>
+                                    <a asp-action="Index"
+                                           asp-route-page="@(ViewBag.Page + 1)"
+                                           asp-route-categoryId="@ViewBag.CategoryId"
+                                           asp-route-search="@ViewBag.Search"
+                                           asp-route-sort="@ViewBag.Sort"
+                                           class="page-btn">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="fas fa-search"></i>
+                    <h5>Aucun produit trouvé</h5>
+                    <p>Essayez de modifier vos filtres ou votre recherche.</p>
+                    <a asp-action="Index" class="btn-filter-apply mt-2">
+                        Voir tous les produits
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function setView(type) {
+            const grid = document.getElementById('productsGrid');
+            const cols = grid.querySelectorAll('.product-col');
+            document.getElementById('gridView').classList.toggle('active', type === 'grid');
+            document.getElementById('listView').classList.toggle('active', type === 'list');
+            cols.forEach(col => {
+                col.className = type === 'list'
+                    ? 'col-12 product-col'
+                    : 'col-6 col-md-4 product-col';
+            });
+        }
+    </script>
+}

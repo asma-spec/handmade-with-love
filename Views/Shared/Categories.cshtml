@@ -1,0 +1,92 @@
+﻿@model IEnumerable<Projet.Models.Category>
+@{
+    ViewData["Title"] = "Catégories";
+}
+
+<!-- Header -->
+<div class="shop-header">
+    <div class="container">
+        <h1 class="shop-title">
+            <i class="fas fa-tags me-2"></i>Nos Catégories
+        </h1>
+        <p class="shop-subtitle">
+            Explorez notre sélection d'accessoires par catégorie
+        </p>
+    </div>
+</div>
+
+<div class="container py-5">
+
+    <!-- Grille catégories -->
+    <div class="row g-4">
+        @foreach (var cat in Model)
+        {
+            <div class="col-6 col-md-4 col-lg-3">
+                <a asp-controller="Shop" asp-action="Index"
+                       asp-route-categoryId="@cat.Id"
+                       class="cat-page-card text-decoration-none">
+
+                    <!-- Icône -->
+                    <div class="cat-page-icon">
+                        @{
+                            string icon = cat.Name.ToLower() switch
+                            {
+                                "bagues" => "fa-ring",
+                                "boucles" => "fa-star",
+                                "collier" => "fa-circle-dot",
+                                "serre-tête" => "fa-crown",
+                                "pochette" => "fa-briefcase",
+                                "couffin traditionnel" => "fa-basket-shopping",
+                                "séries" => "fa-layer-group",
+                                _ => "fa-tag"
+                            };
+                        }
+                        <i class="fas @icon"></i>
+                    </div>
+
+                    <!-- Infos -->
+                    <div class="cat-page-info">
+                        <h5 class="cat-page-name">@cat.Name</h5>
+                        @if (!string.IsNullOrEmpty(cat.Description))
+                        {
+                            <p class="cat-page-desc">@cat.Description</p>
+                        }
+                        <div class="cat-page-count">
+                            <i class="fas fa-box me-1"></i>
+                            @cat.Products.Count produit(s)
+                        </div>
+                    </div>
+
+                    <!-- Flèche -->
+                    <div class="cat-page-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+
+                </a>
+            </div>
+        }
+    </div>
+
+    <!-- Section mise en avant -->
+    <div class="cat-promo-banner mt-5">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <span class="section-badge">Nouveautés</span>
+                <h3 class="cat-promo-title">
+                    Découvrez toute notre collection
+                </h3>
+                <p class="cat-promo-desc">
+                    Plus de 100 références d'accessoires soigneusement sélectionnées
+                    pour sublimer votre style au quotidien.
+                </p>
+            </div>
+            <div class="col-lg-4 text-center text-lg-end mt-3 mt-lg-0">
+                <a asp-controller="Shop" asp-action="Index"
+                       class="btn-hero-primary d-inline-block">
+                    <i class="fas fa-store me-2"></i>Voir tous les produits
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>

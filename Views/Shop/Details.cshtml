@@ -1,0 +1,375 @@
+﻿@model Projet.Models.Product
+@{
+    ViewData["Title"] = Model.Name;
+    decimal displayPrice = (Model.IsOnSale && Model.DiscountPercent > 0)
+        ? Model.Price * (1 - (Model.DiscountPercent ?? 0) / 100)
+        : Model.Price;
+    double avg = Model.Reviews?.Any() == true
+        ? Model.Reviews.Average(r => r.Rating) : 0;
+    int count = Model.Reviews?.Count ?? 0;
+}
+
+<div class="container py-5">
+
+    <!-- Fil d'ariane -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb-custom">
+            <li><a asp-controller="Home" asp-action="Index">Accueil</a></li>
+            <li><i class="fas fa-chevron-right"></i></li>
+            <li><a asp-controller="Shop" asp-action="Index">Boutique</a></li>
+            <li><i class="fas fa-chevron-right"></i></li>
+            <li>
+                <a asp-controller="Shop" asp-action="Index"
+                       asp-route-categoryId="@Model.CategoryId">
+                    @Model.Category?.Name
+                </a>
+            </li>
+            <li><i class="fas fa-chevron-right"></i></li>
+            <li class="active">@Model.Name</li>
+        </ol>
+    </nav>
+
+    <div class="row g-5">
+
+        <!-- Image -->
+        <div class="col-lg-5">
+            <div class="detail-img-wrap">
+                @if (Model.ImageUrl != null)
+                {
+                    <img src="@Model.ImageUrl" alt="@Model.Name" class="detail-img" />
+                }
+                else
+                {
+                    <div class="detail-img-placeholder">
+                        <i class="fas fa-image"></i>
+                    </div>
+                }
+                @if (Model.IsOnSale && Model.DiscountPercent > 0)
+                {
+                    <span class="detail-badge-promo">-@Model.DiscountPercent%</span>
+                }
+                @if (Model.Stock <= 5 && Model.Stock > 0)
+                {
+                    <span class="detail-badge-low">
+                        Plus que @Model.Stock en stock !
+                    </span>
+                }
+                @if (Model.Stock == 0)
+                {
+                    <span class="detail-badge-out">Rupture de stock</span>
+                }
+            </div>
+        </div>
+
+        <!-- Infos -->
+        <div class="col-lg-7">
+            <span class="product-cat mb-2 d-block">@Model.Category?.Name</span>
+            <h1 class="detail-title">@Model.Name</h1>
+
+            <!-- Note moyenne -->
+            <div class="detail-rating mb-3">
+                @for (int s = 1; s <= 5; s++)
+                {
+                    <i class="fas fa-star @(s <= avg ? "star-on" : "star-off")"></i>
+                }
+                <span class="detail-rating-count">(@count avis)</span>
+            </div>
+
+            <!-- Prix avec promo -->
+            @if (Model.IsOnSale && Model.DiscountPercent > 0)
+            {
+                <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+                    <div class="detail-price">@displayPrice.ToString("0.00") DT</div>
+                    <div class="text-muted text-decoration-line-through fs-5">
+                        @Model.Price.ToString("0.00") DT
+                    </div>
+                    <span class="promo-inline-badge">
+                        -@Model.DiscountPercent% 🎉
+                    </span>
+                </div>
+            }
+            else
+            {
+                <div class="detail-price mb-3">@Model.Price.ToString("0.00") DT</div>
+            }
+
+            <p class="detail-desc">@Model.Description</p>
+
+            <!-- Stock -->
+            <div class="detail-stock mb-4">
+                @if (Model.Stock > 5)
+                {
+                    <span class="stock-in">
+                        <i class="fas fa-check-circle me-2"></i>
+                        En stock (@Model.Stock disponibles)
+                    </span>
+                }
+                else if (Model.Stock > 0)
+                {
+                    <span class="stock-low">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Stock limité (@Model.Stock restants)
+                    </span>
+                }
+                else
+                {
+                    <span class="stock-out">
+                        <i class="fas fa-times-circle me-2"></i>
+                        Rupture de stock
+                    </span>
+                }
+            </div>
+
+            <!-- Quantité & Actions -->
+            @if (Model.Stock > 0)
+            {
+                <div class="detail-actions">
+                    <div class="qty-control">
+                        <button class="qty-btn" onclick="changeQty(-1)">−</button>
+                        <input type="number" id="qty" value="1" min="1"
+                               max="@Model.Stock" class="qty-input" />
+                        <button class="qty-btn" onclick="changeQty(1)">+</button>
+                    </div>
+                    <a asp-controller="Cart" asp-action="Add"
+                           asp-route-id="@Model.Id" class="btn-detail-cart">
+                        <i class="fas fa-shopping-bag me-2"></i>Ajouter au panier
+                    </a>
+                    <a asp-controller="Wishlist" asp-action="Add"
+                           asp-route-id="@Model.Id" class="btn-detail-wish">
+                        <i class="fas fa-heart"></i>
+                    </a>
+                </div>
+            }
+
+            <!-- Garanties -->
+            <div class="detail-guarantees">
+                <div class="guarantee-item">
+                    <i class="fas fa-truck"></i>
+                    <span>Livraison gratuite dès 100 DT</span>
+                </div>
+                <div class="guarantee-item">
+                    <i class="fas fa-undo"></i>
+                    <span>Retour sous 30 jours</span>
+                </div>
+                <div class="guarantee-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Paiement 100% sécurisé</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Avis clients -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h4 class="section-title-left mb-4">
+                <i class="fas fa-star me-2 text-gold"></i>Avis clients
+            </h4>
+            @if (Model.Reviews != null && Model.Reviews.Any())
+            {
+                <div class="row g-3">
+                    @foreach (var r in Model.Reviews.Where(r => r.IsApproved))
+                    {
+                        <div class="col-md-4">
+                            <div class="review-card">
+                                <div class="review-stars">
+                                    @for (int s = 1; s <= 5; s++)
+                                    {
+                                        <i class="fas fa-star @(s <= r.Rating ? "star-on" : "star-off")"></i>
+                                    }
+                                </div>
+                                <p class="review-text">"@r.Comment"</p>
+                                <div class="review-author">
+                                    <div class="review-avatar">
+                                        @r.User?.FullName?.Substring(0, 1)
+                                    </div>
+                                    <div>
+                                        <div class="review-name">@r.User?.FullName</div>
+                                        <div class="review-date">
+                                            @r.CreatedAt.ToString("dd/MM/yyyy")
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">Aucun avis pour ce produit.</p>
+            }
+        </div>
+    </div>
+
+    <!-- Produits similaires -->
+    @if (ViewBag.Similar != null &&
+             ((List<Projet.Models.Product>)ViewBag.Similar).Any())
+    {
+        <div class="row mt-5">
+            <div class="col-12">
+                <h4 class="section-title-left mb-4">
+                    <i class="fas fa-gem me-2"></i>Produits similaires
+                </h4>
+                <div class="row g-3">
+                    @foreach (var p in (List<Projet.Models.Product>)ViewBag.Similar)
+                    {
+                        <div class="col-6 col-md-3">
+                            <div class="product-card">
+                                @if (p.ImageUrl != null)
+                                {
+                                    <img src="@p.ImageUrl" alt="@p.Name" />
+                                }
+                                else
+                                {
+                                    <div class="product-img-placeholder">
+                                        <i class="fas fa-image"></i>
+                                    </div>
+                                }
+                                <div class="product-body">
+                                    <span class="product-cat">@p.Category?.Name</span>
+                                    <h6 class="product-name">@p.Name</h6>
+                                    <div class="product-footer">
+                                        @if (p.IsOnSale && p.DiscountPercent > 0)
+                                        {
+                                            decimal sp = p.Price *
+                                                (1 - (p.DiscountPercent ?? 0) / 100);
+                                            <div>
+                                                <span class="product-price">
+                                                    @sp.ToString("0.00") DT
+                                                </span>
+                                                <small class="text-muted text-decoration-line-through ms-1"
+                                                       style="font-size:0.75rem">
+                                                    @p.Price.ToString("0.00") DT
+                                                </small>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="product-price">
+                                                @p.Price.ToString("0.00") DT
+                                            </span>
+                                        }
+                                        <a asp-controller="Shop" asp-action="Details"
+                                               asp-route-id="@p.Id" class="btn-add-cart">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    <!-- ═══════════════════════════════════════
+     VOUS AIMEREZ AUSSI
+═══════════════════════════════════════ -->
+    @if (ViewBag.YouMayAlsoLike != null &&
+         ((List<Projet.Models.Product>)ViewBag.YouMayAlsoLike).Any())
+    {
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="luxury-header mb-4">
+                    <div class="luxury-header-line"></div>
+                    <div class="luxury-header-text">
+                        <span class="luxury-label">✦ Sélection ✦</span>
+                        <h4 class="luxury-title">Vous aimerez aussi</h4>
+                    </div>
+                    <div class="luxury-header-line"></div>
+                </div>
+
+                <div class="row g-4 justify-content-center">
+                    @foreach (var p in
+                                        (List<Projet.Models.Product>)ViewBag.YouMayAlsoLike)
+                    {
+                        <div class="col-6 col-md-4">
+                            <div class="product-luxury-card">
+                                @if (p.IsOnSale && p.DiscountPercent > 0)
+                                {
+                                    <span class="product-luxury-badge">
+                                        -@p.DiscountPercent%
+                                    </span>
+                                }
+                                <div class="product-luxury-img">
+                                    @if (p.ImageUrl != null)
+                                    {
+                                        <img src="@p.ImageUrl" alt="@p.Name" />
+                                    }
+                                    else
+                                    {
+                                        <div class="product-luxury-placeholder">
+                                            <i class="fas fa-gem"></i>
+                                        </div>
+                                    }
+                                    <div class="product-luxury-overlay">
+                                        <a asp-controller="Shop"
+                                               asp-action="Details"
+                                               asp-route-id="@p.Id"
+                                               class="product-luxury-btn">
+                                            <i class="fas fa-eye me-2"></i>Voir
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="product-luxury-body">
+                                    <span class="product-luxury-cat">
+                                        @p.Category?.Name
+                                    </span>
+                                    <h6 class="product-luxury-name">@p.Name</h6>
+                                    <div class="product-luxury-price">
+                                        @if (p.IsOnSale && p.DiscountPercent > 0)
+                                        {
+                                            decimal pp = p.Price *
+                                                (1 - (p.DiscountPercent ?? 0) / 100);
+                                            <span class="price-new">
+                                                @pp.ToString("0.00") DT
+                                            </span>
+                                            <span class="price-old">
+                                                @p.Price.ToString("0.00") DT
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="price-new">
+                                                @p.Price.ToString("0.00") DT
+                                            </span>
+                                        }
+                                    </div>
+                                    <div class="you-may-actions mt-3">
+                                        <a asp-controller="Cart"
+                                               asp-action="Add"
+                                               asp-route-id="@p.Id"
+                                               class="you-may-cart-btn">
+                                            <i class="fas fa-shopping-bag me-2"></i>
+                                            Ajouter au panier
+                                        </a>
+                                        <a asp-controller="Wishlist"
+                                               asp-action="Add"
+                                               asp-route-id="@p.Id"
+                                               class="you-may-wish-btn">
+                                            <i class="fas fa-heart"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function changeQty(delta) {
+            const input = document.getElementById('qty');
+            const max   = parseInt(input.max);
+            let val     = parseInt(input.value) + delta;
+            if (val < 1)   val = 1;
+            if (val > max) val = max;
+            input.value = val;
+        }
+    </script>
+}

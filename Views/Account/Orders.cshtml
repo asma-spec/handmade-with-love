@@ -1,0 +1,115 @@
+﻿@model List<Projet.Models.Order>
+@{
+    ViewData["Title"] = "Mes commandes";
+}
+
+<div class="shop-header">
+    <div class="container">
+        <h1 class="shop-title">
+            <i class="fas fa-box me-2"></i>Mes commandes
+        </h1>
+        <p class="shop-subtitle">@Model.Count commande(s)</p>
+    </div>
+</div>
+
+<div class="container py-5">
+    @if (Model.Count > 0)
+    {
+        <div class="orders-page-list">
+            @foreach (var order in Model)
+            {
+                <div class="order-page-card">
+
+                    <div class="order-page-header">
+                        <div class="order-page-info">
+                            <span class="order-page-num">#@order.Id</span>
+                            <span class="order-page-date">
+                                @order.CreatedAt.ToString("dd/MM/yyyy")
+                            </span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="order-status status-@order.Status.ToLower().Replace(" ", "")">
+                                @order.Status
+                            </span>
+                            <!-- ✅ Correction prob 2 : ajout asp-controller -->
+                            <a asp-controller="Account"
+                                   asp-action="OrderDetail"
+                                   asp-route-id="@order.Id"
+                                   class="btn-link-rose">
+                                <i class="fas fa-eye me-1"></i>Détails
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="order-page-items">
+                        @if (order.Items != null)
+                        {
+                            int count = 0;
+                            foreach (var item in order.Items)
+                            {
+                                if (count >= 3) break;
+                                count++;
+                                <div class="order-page-item">
+                                    <div class="order-page-item-img">
+                                        @if (item.Product != null &&
+                                                                                     item.Product.ImageUrl != null)
+                                        {
+                                            <img src="@item.Product.ImageUrl"
+                                                 alt="produit" />
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-image"></i>
+                                        }
+                                    </div>
+                                    <div class="order-page-item-info">
+                                        <div class="order-page-item-name">
+                                            @(item.Product != null
+                                                ? item.Product.Name
+                                                : "Produit")
+                                        </div>
+                                        <!-- ✅ Correction prob 1 -->
+                                        <div class="order-page-item-qty">
+                                            x@(item.Quantity)
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            if (order.Items.Count > 3)
+                            {
+                                <div class="order-page-more">
+                                    +@(order.Items.Count - 3) autre(s)
+                                </div>
+                            }
+                        }
+                    </div>
+
+                    <div class="order-page-footer">
+                        <div class="order-page-shipping">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            @order.ShippingAddress
+                        </div>
+                        <div class="order-page-total">
+                            Total :
+                            <strong>@order.Total.ToString("0.00") DT</strong>
+                        </div>
+                    </div>
+
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="cart-empty">
+            <i class="fas fa-box-open"></i>
+            <h4>Aucune commande</h4>
+            <p>Vous n'avez pas encore passé de commande.</p>
+            <a asp-controller="Shop" asp-action="Index"
+                   class="btn-filter-apply"
+                   style="max-width:220px; margin:0 auto">
+                <i class="fas fa-store me-2"></i>Découvrir la boutique
+            </a>
+        </div>
+    }
+</div>

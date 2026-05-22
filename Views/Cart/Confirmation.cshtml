@@ -1,0 +1,90 @@
+﻿@model Projet.Models.Order
+@{
+    ViewData["Title"] = "Commande confirmée";
+}
+
+<div class="container py-5">
+    <div class="confirmation-box">
+
+        <!-- Icône succès -->
+        <div class="confirmation-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+
+        <h2 class="confirmation-title">Commande confirmée !</h2>
+        <p class="confirmation-sub">
+            Merci pour votre commande. Vous recevrez un email de confirmation.
+        </p>
+
+        <div class="confirmation-num">
+            Numéro de commande : <strong>#@Model.Id</strong>
+        </div>
+
+        <!-- Détails -->
+        <div class="confirmation-details">
+            <div class="row g-3 text-start">
+                <div class="col-md-6">
+                    <div class="conf-detail-card">
+                        <div class="conf-detail-label">
+                            <i class="fas fa-user me-2"></i>Client
+                        </div>
+                        <div class="conf-detail-value">@Model.CustomerName</div>
+                        <div class="conf-detail-sub">@Model.CustomerEmail</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="conf-detail-card">
+                        <div class="conf-detail-label">
+                            <i class="fas fa-map-marker-alt me-2"></i>Livraison
+                        </div>
+                        <div class="conf-detail-value">@Model.ShippingAddress</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="conf-detail-card">
+                        <div class="conf-detail-label">
+                            <i class="fas fa-coins me-2"></i>Total payé
+                        </div>
+                        <div class="conf-detail-value text-rose">
+                            @Model.Total.ToString("0.00") DT
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="conf-detail-card">
+                        <div class="conf-detail-label">
+                            <i class="fas fa-star me-2"></i>Points gagnés
+                        </div>
+                        <div class="conf-detail-value text-gold">
+                            +@((int)(Model.Total * 10)) points
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Articles -->
+        <div class="confirmation-items">
+            <h6 class="mb-3">Articles commandés</h6>
+            @foreach (var item in Model.Items)
+            {
+                <div class="conf-item">
+                    <span>@item.Product?.Name × @item.Quantity</span>
+                    <span>@((item.UnitPrice * item.Quantity).ToString("0.00")) DT</span>
+                </div>
+            }
+        </div>
+
+        <!-- Actions -->
+        <div class="confirmation-actions">
+            <a asp-controller="Account" asp-action="Orders"
+                   class="btn-filter-apply" style="max-width:200px">
+                <i class="fas fa-box me-2"></i>Mes commandes
+            </a>
+            <a asp-controller="Shop" asp-action="Index"
+                   class="btn-filter-reset" style="max-width:200px; text-align:center">
+                <i class="fas fa-store me-2"></i>Continuer mes achats
+            </a>
+        </div>
+    </div>
+</div>

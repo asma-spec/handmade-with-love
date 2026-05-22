@@ -1,0 +1,465 @@
+﻿@{
+    ViewData["Title"] = "Accueil";
+}
+
+<!-- ═══════════════════════════════════════════
+     1. HERO
+═══════════════════════════════════════════ -->
+<section class="hero-luxury">
+    <div class="hero-luxury-bg"></div>
+    <div class="hero-luxury-overlay"></div>
+    <div class="container h-100">
+        <div class="row h-100 align-items-center justify-content-center text-center">
+            <div class="col-lg-8">
+                <div class="hero-luxury-content">
+                    <div class="hero-luxury-line"></div>
+                    <span class="hero-luxury-badge">
+                        ✦ Collection Printemps 2026 ✦
+                    </span>
+                    <h1 class="hero-luxury-title">
+                        L'Art de l'Accessoire
+                        <span class="hero-luxury-subtitle-script">
+                            Handmade with Love
+                        </span>
+                    </h1>
+                    <p class="hero-luxury-desc">
+                        Chaque pièce est créée à la main avec passion,
+                        pour sublimer votre beauté naturelle.
+                    </p>
+                    <div class="hero-luxury-actions">
+                        <a asp-controller="Shop" asp-action="Index"
+                               class="btn-luxury-primary">
+                            <span>Découvrir la collection</span>
+                            <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                        <a asp-controller="Shop" asp-action="Categories"
+                               class="btn-luxury-outline">
+                            Nos catégories
+                        </a>
+                    </div>
+                    <div class="hero-luxury-stats">
+                        <div class="hero-stat">
+                            <span class="stat-num">100%</span>
+                            <span class="stat-label">Fait main</span>
+                        </div>
+                        <div class="stat-sep">✦</div>
+                        <div class="hero-stat">
+                            <span class="stat-num">500+</span>
+                            <span class="stat-label">Créations</span>
+                        </div>
+                        <div class="stat-sep">✦</div>
+                        <div class="hero-stat">
+                            <span class="stat-num">4.9★</span>
+                            <span class="stat-label">Satisfaction</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Scroll indicator -->
+    <div class="hero-scroll">
+        <div class="hero-scroll-dot"></div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     2. BANNIÈRE VALEURS
+═══════════════════════════════════════════ -->
+<section class="values-banner">
+    <div class="container">
+        <div class="row g-0">
+            @foreach (var item in new[] {
+                new { Icon = "fa-gem",        Text = "Artisanat d'exception" },
+                new { Icon = "fa-truck",      Text = "Livraison rapide" },
+                new { Icon = "fa-heart",      Text = "Fait avec amour" },
+                new { Icon = "fa-shield-alt", Text = "Qualité garantie" },
+            })
+            {
+                <div class="col-6 col-md-3">
+                    <div class="value-item">
+                        <i class="fas @item.Icon"></i>
+                        <span>@item.Text</span>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     3. CATÉGORIES
+═══════════════════════════════════════════ -->
+<section class="section-luxury">
+    <div class="container">
+        <div class="luxury-header">
+            <div class="luxury-header-line"></div>
+            <div class="luxury-header-text">
+                <span class="luxury-label">✦ Nos Collections ✦</span>
+                <h2 class="luxury-title">Explorez par catégorie</h2>
+            </div>
+            <div class="luxury-header-line"></div>
+        </div>
+        <div class="row g-3 mt-4">
+            @if (ViewBag.Categories != null)
+            {
+                foreach (var cat in ViewBag.Categories)
+                {
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <a asp-controller="Shop" asp-action="Index"
+                               asp-route-categoryId="@cat.Id"
+                               class="cat-luxury-card text-decoration-none">
+                            <div class="cat-luxury-icon">
+                                <i class="fas fa-gem"></i>
+                            </div>
+                            <span class="cat-luxury-name">@cat.Name</span>
+                            <div class="cat-luxury-arrow">→</div>
+                        </a>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     4. PRODUITS VEDETTES
+═══════════════════════════════════════════ -->
+<section class="section-luxury bg-luxury-alt">
+    <div class="container">
+        <div class="luxury-header">
+            <div class="luxury-header-line"></div>
+            <div class="luxury-header-text">
+                <span class="luxury-label">✦ Sélection ✦</span>
+                <h2 class="luxury-title">Produits vedettes</h2>
+            </div>
+            <div class="luxury-header-line"></div>
+        </div>
+        <div class="row g-4 mt-3">
+            @if (ViewBag.FeaturedProducts != null)
+            {
+                foreach (var p in ViewBag.FeaturedProducts)
+                {
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="product-luxury-card">
+                            @if (p.IsOnSale && p.DiscountPercent > 0)
+                            {
+                                <span class="product-luxury-badge">
+                                    -@p.DiscountPercent%
+                                </span>
+                            }
+                            <div class="product-luxury-img">
+                                @if (p.ImageUrl != null)
+                                {
+                                    <img src="@p.ImageUrl" alt="@p.Name" />
+                                }
+                                else
+                                {
+                                    <div class="product-luxury-placeholder">
+                                        <i class="fas fa-gem"></i>
+                                    </div>
+                                }
+                                <div class="product-luxury-overlay">
+                                    <a asp-controller="Shop" asp-action="Details"
+                                           asp-route-id="@p.Id"
+                                           class="product-luxury-btn">
+                                        <i class="fas fa-eye me-2"></i>Voir
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="product-luxury-body">
+                                <span class="product-luxury-cat">
+                                    @p.Category?.Name
+                                </span>
+                                <h6 class="product-luxury-name">@p.Name</h6>
+                                <div class="product-luxury-price">
+                                    @if (p.IsOnSale && p.DiscountPercent > 0)
+                                    {
+                                        decimal pp = p.Price *
+                                            (1 - (p.DiscountPercent ?? 0) / 100);
+                                        <span class="price-new">
+                                            @pp.ToString("0.00") DT
+                                        </span>
+                                        <span class="price-old">
+                                            @p.Price.ToString("0.00") DT
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="price-new">
+                                            @p.Price.ToString("0.00") DT
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+        <div class="text-center mt-4">
+            <a asp-controller="Shop" asp-action="Index"
+                   class="btn-luxury-outline-dark">
+                <i class="fas fa-store me-2"></i>Voir tous les produits
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     5. PROMOTIONS
+═══════════════════════════════════════════ -->
+@if (ViewBag.PromoProducts != null &&
+     ((IEnumerable<Projet.Models.Product>)ViewBag.PromoProducts).Any())
+{
+    <section class="promo-luxury-section">
+        <div class="promo-luxury-bg"></div>
+        <div class="container position-relative">
+            <div class="luxury-header">
+                <div class="luxury-header-line light"></div>
+                <div class="luxury-header-text">
+                    <span class="luxury-label light">✦ Offres Spéciales ✦</span>
+                    <h2 class="luxury-title light">Promotions en cours</h2>
+                </div>
+                <div class="luxury-header-line light"></div>
+            </div>
+            <div class="row g-4 mt-3">
+                @foreach (var p in (IEnumerable<Projet.Models.Product>)ViewBag.PromoProducts)
+                {
+                    <div class="col-6 col-md-3">
+                        <div class="product-luxury-card promo-card">
+                            <span class="product-luxury-badge large">
+                                -@p.DiscountPercent%
+                            </span>
+                            <div class="product-luxury-img">
+                                @if (p.ImageUrl != null)
+                                {
+                                    <img src="@p.ImageUrl" alt="@p.Name" />
+                                }
+                                else
+                                {
+                                    <div class="product-luxury-placeholder">
+                                        <i class="fas fa-gem"></i>
+                                    </div>
+                                }
+                                <div class="product-luxury-overlay">
+                                    <a asp-controller="Shop" asp-action="Details"
+                                           asp-route-id="@p.Id"
+                                           class="product-luxury-btn">
+                                        <i class="fas fa-eye me-2"></i>Voir
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="product-luxury-body">
+                                <h6 class="product-luxury-name">@p.Name</h6>
+                                <div class="product-luxury-price">
+                                    @{
+                                        decimal pp2 = p.Price *
+                                            (1 - (p.DiscountPercent ?? 0) / 100);
+                                    }
+                                    <span class="price-new">
+                                        @pp2.ToString("0.00") DT
+                                    </span>
+                                    <span class="price-old">
+                                        @p.Price.ToString("0.00") DT
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<!-- ═══════════════════════════════════════════
+     6. POURQUOI NOUS
+═══════════════════════════════════════════ -->
+<section class="section-luxury">
+    <div class="container">
+        <div class="luxury-header">
+            <div class="luxury-header-line"></div>
+            <div class="luxury-header-text">
+                <span class="luxury-label">✦ Nos Engagements ✦</span>
+                <h2 class="luxury-title">Pourquoi nous choisir</h2>
+            </div>
+            <div class="luxury-header-line"></div>
+        </div>
+        <div class="row g-4 mt-3">
+            @foreach (var item in new[] {
+                new { Icon="fa-hand-holding-heart", Title="Fait main",
+                      Desc="Chaque pièce est créée artisanalement avec soin." },
+                new { Icon="fa-truck",              Title="Livraison rapide",
+                      Desc="Livraison en 24-48h partout en Tunisie." },
+                new { Icon="fa-undo",               Title="Retour facile",
+                      Desc="30 jours pour changer d'avis, sans conditions." },
+                new { Icon="fa-headset",            Title="Support 7j/7",
+                      Desc="Notre équipe est toujours là pour vous." },
+            })
+            {
+                <div class="col-6 col-md-3">
+                    <div class="why-luxury-card">
+                        <div class="why-luxury-icon">
+                            <i class="fas @item.Icon"></i>
+                        </div>
+                        <h6 class="why-luxury-title">@item.Title</h6>
+                        <p class="why-luxury-desc">@item.Desc</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     7. NOUVEAUTÉS
+═══════════════════════════════════════════ -->
+<section class="section-luxury bg-luxury-alt">
+    <div class="container">
+        <div class="luxury-header">
+            <div class="luxury-header-line"></div>
+            <div class="luxury-header-text">
+                <span class="luxury-label">✦ Vient d'arriver ✦</span>
+                <h2 class="luxury-title">Nouveautés</h2>
+            </div>
+            <div class="luxury-header-line"></div>
+        </div>
+        <div class="row g-4 mt-3">
+            @if (ViewBag.NewProducts != null)
+            {
+                foreach (var p in ViewBag.NewProducts)
+                {
+                    <div class="col-6 col-md-3">
+                        <div class="product-luxury-card">
+                            <span class="product-luxury-new">Nouveau</span>
+                            <div class="product-luxury-img">
+                                @if (p.ImageUrl != null)
+                                {
+                                    <img src="@p.ImageUrl" alt="@p.Name" />
+                                }
+                                else
+                                {
+                                    <div class="product-luxury-placeholder">
+                                        <i class="fas fa-gem"></i>
+                                    </div>
+                                }
+                                <div class="product-luxury-overlay">
+                                    <a asp-controller="Shop" asp-action="Details"
+                                           asp-route-id="@p.Id"
+                                           class="product-luxury-btn">
+                                        <i class="fas fa-eye me-2"></i>Voir
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="product-luxury-body">
+                                <span class="product-luxury-cat">
+                                    @p.Category?.Name
+                                </span>
+                                <h6 class="product-luxury-name">@p.Name</h6>
+                                <div class="product-luxury-price">
+                                    <span class="price-new">
+                                        @p.Price.ToString("0.00") DT
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     8. AVIS CLIENTS
+═══════════════════════════════════════════ -->
+<section class="section-luxury reviews-luxury">
+    <div class="container">
+        <div class="luxury-header">
+            <div class="luxury-header-line"></div>
+            <div class="luxury-header-text">
+                <span class="luxury-label">✦ Témoignages ✦</span>
+                <h2 class="luxury-title">Ce que disent nos clientes</h2>
+            </div>
+            <div class="luxury-header-line"></div>
+        </div>
+        <div class="row g-4 mt-3 justify-content-center">
+            @if (ViewBag.Reviews != null &&
+                             ((IEnumerable<Projet.Models.Review>)ViewBag.Reviews).Any())
+            {
+                foreach (var r in
+                    (IEnumerable<Projet.Models.Review>)ViewBag.Reviews)
+                {
+                    <div class="col-md-4">
+                        <div class="review-luxury-card">
+                            <div class="review-luxury-quote">"</div>
+                            <div class="review-stars mb-3">
+                                @for (int s = 1; s <= 5; s++)
+                                {
+                                    <i class="fas fa-star @(s <= r.Rating
+                                                                                                                   ? "star-on" : "star-off")"></i>
+                            }
+                        </div>
+                        <p class="review-luxury-text">@r.Comment</p>
+                        <div class="review-luxury-author">
+                            <div class="review-luxury-avatar">
+                                @(r.User != null && r.User.FullName != null
+                                    ? r.User.FullName.Substring(0, 1) : "?")
+                            </div>
+                            <div>
+                                <div class="review-luxury-name">
+                                    @r.User?.FullName
+                                </div>
+                                <div class="review-luxury-date">
+                                    @r.CreatedAt.ToString("MMMM yyyy")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+            else
+        {
+            <div class="col-12 text-center py-4">
+                <i class="fas fa-star fa-2x mb-3 d-block"
+                   style="color:var(--rose-light)"></i>
+                <p class="text-muted">
+                    Soyez la première à laisser un avis !
+                </p>
+            </div>
+        }
+    </div>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     9. RÉSEAUX SOCIAUX
+═══════════════════════════════════════════ -->
+<section class="social-luxury-section">
+    <div class="social-luxury-bg"></div>
+    <div class="container position-relative text-center">
+        <div class="luxury-header">
+            <div class="luxury-header-line light"></div>
+            <div class="luxury-header-text">
+                <span class="luxury-label light">✦ Suivez-nous ✦</span>
+                <h2 class="luxury-title light">Rejoignez notre communauté</h2>
+            </div>
+            <div class="luxury-header-line light"></div>
+        </div>
+        <p class="social-luxury-desc mt-3">
+            Découvrez nos créations, coulisses et inspirations sur nos réseaux.
+        </p>
+        <div class="social-follow-btns mt-4">
+            <a href="https://www.facebook.com/profile.php?id=61575866077900"
+                   target="_blank" class="social-follow-btn facebook">
+                <i class="fab fa-facebook-f me-2"></i>Facebook
+            </a>
+            <a href="https://www.instagram.com/handmadelove667/"
+                   target="_blank" class="social-follow-btn instagram">
+                <i class="fab fa-instagram me-2"></i>Instagram
+            </a>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,50 @@
+﻿@model IEnumerable<Projet.Models.Notification>
+@{
+    ViewData["Title"] = "Mes notifications";
+}
+
+<div class="shop-header">
+    <div class="container">
+        <h1 class="shop-title">
+            <i class="fas fa-bell me-2"></i>Mes notifications
+        </h1>
+        <p class="shop-subtitle">@Model.Count() notification(s)</p>
+    </div>
+</div>
+
+<div class="container py-5">
+    @if (Model.Any())
+    {
+        <div class="d-flex flex-column gap-3">
+            @foreach (var n in Model)
+            {
+                <div class="notif-card @(n.IsRead ? "" : "unread")">
+                    <div class="notif-icon">
+                        <i class="fas @n.Icon"></i>
+                    </div>
+                    <div class="notif-body">
+                        <div class="notif-title">@n.Title</div>
+                        <div class="notif-message">@n.Message</div>
+                        <div class="notif-date">
+                            @n.CreatedAt.ToString("dd/MM/yyyy à HH:mm")
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(n.Link))
+                    {
+                        <a href="@n.Link" class="notif-btn">
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="cart-empty">
+            <i class="fas fa-bell-slash"></i>
+            <h4>Aucune notification</h4>
+            <p>Vous n'avez pas encore de notifications.</p>
+        </div>
+    }
+</div>

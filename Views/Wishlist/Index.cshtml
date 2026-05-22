@@ -1,0 +1,162 @@
+﻿@model IEnumerable<Projet.Models.WishlistItem>
+@{
+    ViewData["Title"] = "Ma Wishlist";
+}
+
+<!-- Header -->
+<div class="shop-header">
+    <div class="container">
+        <h1 class="shop-title">
+            <i class="fas fa-heart me-2"></i>Ma Wishlist
+        </h1>
+        <p class="shop-subtitle">@Model.Count() produit(s) sauvegardé(s)</p>
+    </div>
+</div>
+
+<div class="container py-5">
+    @if (Model.Any())
+    {
+        <!-- Barre d'actions -->
+        <div class="wishlist-topbar mb-4">
+            <span class="wishlist-count">
+                <i class="fas fa-heart me-2 text-rose"></i>
+                <strong>@Model.Count()</strong> article(s)
+            </span>
+            <a asp-action="Clear"
+                   class="wishlist-clear-btn"
+                   onclick="return confirm('Vider toute la wishlist ?')">
+                <i class="fas fa-trash me-1"></i>Tout supprimer
+            </a>
+        </div>
+
+        <!-- Grille produits -->
+        <div class="row g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="wishlist-card">
+
+                        <!-- Bouton retirer -->
+                        <button class="wishlist-remove-btn"
+                                onclick="removeFromWishlist(@item.ProductId, this)"
+                                title="Retirer de la wishlist">
+                            <i class="fas fa-times"></i>
+                        </button>
+
+                        <!-- Image -->
+                        <a asp-controller="Shop" asp-action="Details"
+                               asp-route-id="@item.ProductId"
+                               class="wishlist-img-link">
+                            @if (item.Product?.ImageUrl != null)
+                            {
+                                <img src="@item.Product.ImageUrl"
+                                     alt="@item.Product.Name"
+                                     class="wishlist-img" />
+                            }
+                            else
+                            {
+                                <div class="wishlist-img-placeholder">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                            }
+                        </a>
+
+                        <!-- Infos -->
+                        <div class="wishlist-body">
+                            <span class="product-cat">
+                                @item.Product?.Category?.Name
+                            </span>
+                            <h6 class="wishlist-name">@item.Product?.Name</h6>
+                            <div class="wishlist-price">
+                                @item.Product?.Price.ToString("0.00") DT
+                            </div>
+
+                            <!-- Stock -->
+                            @if (item.Product?.Stock == 0)
+                            {
+                                <span class="wishlist-stock-out">
+                                    <i class="fas fa-times-circle me-1"></i>
+                                    Rupture de stock
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="wishlist-stock-in">
+                                    <i class="fas fa-check-circle me-1"></i>
+                                    En stock
+                                </span>
+                            }
+
+                            <!-- Date ajout -->
+                            <div class="wishlist-date">
+                                Ajouté le @item.AddedAt.ToString("dd/MM/yyyy")
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="wishlist-actions">
+                                @if (item.Product?.Stock > 0)
+                                {
+                                    <a asp-action="MoveToCart"
+                                           asp-route-id="@item.ProductId"
+                                           class="wishlist-cart-btn">
+                                        <i class="fas fa-shopping-bag me-1"></i>
+                                        Ajouter au panier
+                                    </a>
+                                }
+                                else
+                                {
+                                    <button class="wishlist-cart-btn disabled" disabled>
+                                        <i class="fas fa-ban me-1"></i>
+                                        Indisponible
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Continuer les achats -->
+        <div class="text-center mt-5">
+            <a asp-controller="Shop" asp-action="Index"
+                   class="btn-link-rose fs-6">
+                <i class="fas fa-store me-2"></i>
+                Continuer mes achats
+            </a>
+        </div>
+    }
+    else
+    {
+        <!-- Wishlist vide -->
+        <div class="wishlist-empty">
+            <div class="wishlist-empty-icon">
+                <i class="fas fa-heart-broken"></i>
+            </div>
+            <h4>Votre wishlist est vide</h4>
+            <p>
+                Parcourez notre boutique et ajoutez vos produits
+                favoris à votre liste de souhaits.
+            </p>
+            <a asp-controller="Shop" asp-action="Index"
+                   class="btn-filter-apply"
+                   style="max-width:240px; margin:0 auto">
+                <i class="fas fa-store me-2"></i>Découvrir la boutique
+            </a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function removeFromWishlist(productId, btn) {
+            const card = btn.closest('.col-6, .col-md-4, .col-lg-3');
+            card.style.transition = 'all 0.3s ease';
+            card.style.opacity    = '0';
+            card.style.transform  = 'scale(0.8)';
+            setTimeout(() => {
+                window.location.href = '/Wishlist/Remove/' + productId;
+            }, 300);
+        }
+    </script>
+}

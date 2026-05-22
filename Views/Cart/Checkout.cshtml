@@ -1,0 +1,212 @@
+﻿@{
+    ViewData["Title"] = "Finaliser la commande";
+    var cart = ViewBag.Cart as List<Projet.Models.CartItem>;
+    decimal total = ViewBag.Total ?? 0m;
+    decimal disc = ViewBag.Discount ?? 0m;
+    decimal loyaltyDisc = ViewBag.LoyaltyDiscount ?? 0m;
+    decimal final = ViewBag.FinalTotal ?? 0m;
+    string? promo = ViewBag.PromoCode;
+    string? loyaltyLvl = ViewBag.LoyaltyLevel;
+}
+
+<div class="shop-header">
+    <div class="container">
+        <h1 class="shop-title">
+            <i class="fas fa-lock me-2"></i>Finaliser la commande
+        </h1>
+    </div>
+</div>
+
+<!-- Étapes -->
+<div class="container py-2">
+    <div class="checkout-steps">
+        <div class="checkout-step done">
+            <div class="step-circle"><i class="fas fa-check"></i></div>
+            <span>Panier</span>
+        </div>
+        <div class="step-line done"></div>
+        <div class="checkout-step active">
+            <div class="step-circle">2</div>
+            <span>Livraison</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="checkout-step">
+            <div class="step-circle">3</div>
+            <span>Confirmation</span>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row g-4">
+
+        <!-- ══ Formulaire ════════════════════════ -->
+        <div class="col-lg-7">
+            <form asp-controller="Cart"
+                  asp-action="ConfirmOrder" method="post">
+                @Html.AntiForgeryToken()
+
+                <!-- Adresse -->
+                <div class="cart-card mb-4">
+                    <div class="cart-card-header">
+                        <h5>
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            Adresse de livraison
+                        </h5>
+                    </div>
+                    <div class="p-4">
+                        <div class="auth-field">
+                            <label class="auth-label">
+                                Adresse complète
+                            </label>
+                            <div class="auth-input-wrap">
+                                <i class="fas fa-home auth-input-icon"></i>
+                                <input type="text" name="shippingAddress"
+                                       class="auth-input"
+                                       placeholder="Rue, Ville, Code postal"
+                                       required />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paiement -->
+                <div class="cart-card mb-4">
+                    <div class="cart-card-header">
+                        <h5>
+                            <i class="fas fa-money-bill-wave me-2"></i>
+                            Mode de paiement
+                        </h5>
+                    </div>
+                    <div class="p-4">
+                        <div class="payment-selected">
+                            <i class="fas fa-truck me-3"></i>
+                            <div>
+                                <div class="payment-selected-title">
+                                    Paiement à la livraison
+                                </div>
+                                <div class="payment-selected-desc">
+                                    Payez en espèces à la réception
+                                    de votre commande.
+                                </div>
+                            </div>
+                            <i class="fas fa-check-circle ms-auto
+                            text-success fs-5"></i>
+                        </div>
+                        <input type="hidden" name="paymentMethod"
+                               value="Paiement à la livraison" />
+                    </div>
+                </div>
+
+                <!-- Bouton confirmer -->
+                <button type="submit" class="cart-checkout-btn">
+                    <i class="fas fa-check me-2"></i>Confirmer la commande
+                </button>
+
+            </form>
+        </div>
+
+        <!-- ══ Récapitulatif ══════════════════════ -->
+        <div class="col-lg-5">
+            <div class="cart-summary">
+                <h5 class="cart-summary-title">
+                    <i class="fas fa-receipt me-2"></i>Votre commande
+                </h5>
+
+                @if (cart != null)
+                {
+                    foreach (var item in cart)
+                    {
+                        <div class="checkout-item">
+                            <span class="checkout-item-name">
+                                @item.ProductName
+                                <small>x@(item.Quantity)</small>
+                            </span>
+                            <span>@item.Total.ToString("0.00") DT</span>
+                        </div>
+                    }
+                }
+
+                <hr />
+
+                <div class="cart-summary-row">
+                    <span>Sous-total</span>
+                    <span>@total.ToString("0.00") DT</span>
+                </div>
+
+                <div class="cart-summary-row">
+                    <span>Livraison</span>
+                    <span class="text-success">
+                        @(total >= 100 ? "Gratuite" : "7.00 DT")
+                    </span>
+                </div>
+
+                @if (disc > 0)
+                {
+                    <div class="cart-summary-row text-success">
+                        <span>
+                            <i class="fas fa-tag me-1"></i>
+                            Réduction (@promo)
+                        </span>
+                        <span>-@disc.ToString("0.00") DT</span>
+                    </div>
+                }
+
+                @if (loyaltyDisc > 0)
+                {
+                    <div class="cart-summary-row text-success">
+                        <span>
+                            <i class="fas fa-crown me-1"></i>
+                            Réduction fidélité (@loyaltyLvl)
+                        </span>
+                        <span>-@loyaltyDisc.ToString("0.00") DT</span>
+                    </div>
+                }
+
+                <hr />
+
+                <div class="cart-summary-total">
+                    <span>Total</span>
+                    <span>
+                        @((final + (total >= 100 ? 0 : 7))
+                            .ToString("0.00")) DT
+                    </span>
+                </div>
+
+                <div class="cart-summary-row mt-2">
+                    <span>Points à gagner</span>
+                    <span class="text-gold">
+                        +@((int)(final * 10)) pts ⭐
+                    </span>
+                </div>
+
+                @if (loyaltyDisc > 0)
+                {
+                    <div class="cart-summary-row mt-1"
+                         style="font-size:0.8rem; color:var(--rose)">
+                        <span>
+                            <i class="fas fa-info-circle me-1"></i>
+                            Avantage niveau @loyaltyLvl appliqué
+                        </span>
+                    </div>
+                }
+
+                <div class="cart-guarantees mt-3">
+                    <div class="cart-guarantee">
+                        <i class="fas fa-shield-alt"></i>
+                        Paiement sécurisé
+                    </div>
+                    <div class="cart-guarantee">
+                        <i class="fas fa-truck"></i>
+                        Livraison rapide
+                    </div>
+                    <div class="cart-guarantee">
+                        <i class="fas fa-undo"></i>
+                        Retour 30 jours
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
